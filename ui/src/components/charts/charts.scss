@@ -1,0 +1,71 @@
+@import "styles/colors.scss";
+@import "styles/fonts.scss";
+
+.chartRegion {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    border-bottom: 0.2rem solid $backgroundColor;
+}
+
+.chartWrapper {
+  height: 20rem;
+  .nv-chart{
+    height: 20rem;
+  }
+  .nv-legend-text {
+    fill: $darkTextColor;
+  }
+}
+
+.chartFilters {
+  text-align: right;
+  padding-right: 5%;
+  ul {
+    list-style-type: none;
+    display: inline-flex;
+    li {
+      padding: 0.1rem;
+      &:hover {
+        cursor: pointer;
+      }
+      &:last-child {
+        border-right: 0;
+      }
+    }
+    button {
+      border-radius: 0;
+      box-shadow: none !important;
+      background-image: none !important;
+      min-width: 6rem;
+      &:focus {
+        outline: 0 !important;
+      }
+    }
+  }
+}
+
+.chartSpinner {
+  margin-left: 50%;
+  margin-top: 5%;
+}
+
+.chartLabel {
+  text-align: center;
+  padding: .4rem;
+  margin: 1.5rem 0;
+  color: $darkTextColor;
+}
+
+@media only screen and (min-width: 350px) and (max-width: 830px) {
+  .chartWrapper .nv-chart {
+    pointer-events: none;
+  }
+
+  .chartFilters {
+    ul {
+     button {
+      min-width: 2rem;
+     }
+    }
+  }
+}

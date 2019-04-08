@@ -1,0 +1,10 @@
+﻿DROP TABLE shares;
+DROP TABLE blocks;
+DROP TABLE balances;
+DROP TABLE payments;
+DROP TABLE balance_changes;
+DROP TABLE minerstats;
+DROP TABLE poolstats;
+DROP TABLE coin_info;
+DROP TABLE invalid_shares;
+DROP TABLE miner_info;
