@@ -23,7 +23,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
         private readonly IMapper mapper;
         private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
-        public void Insert(IDbConnection con, IDbTransaction tx, InvalidShare share)
+        public async Task InsertAsync(IDbConnection con, IDbTransaction tx, InvalidShare share)
         {
             logger.LogInvoke();
 
@@ -39,7 +39,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             var query = "INSERT INTO invalid_shares(poolid, miner, worker, created) " +
                 "VALUES(@poolid, @miner, @worker, @created)";
 
-            con.Execute(query, mapped, tx);
+            await con.ExecuteAsync(query, mapped, tx);
         }
 
         public async Task<long> CountInvalidSharesBetweenCreated(IDbConnection con, string poolId, string miner, DateTime? start, DateTime? end)
@@ -55,7 +55,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
 
             var query = $"SELECT count(*) FROM invalid_shares WHERE {whereClause}";
 
-            return con.QuerySingle<long>(query, new { poolId, miner, start, end });
+            return await con.QuerySingleAsync<long>(query, new { poolId, miner, start, end });
         }
     }
 }

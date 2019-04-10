@@ -70,7 +70,7 @@ namespace Miningcore.Blockchain.Aion
         private AionJobManager manager;
         private IMinerInfoRepository minerInfoRepository;
 
-        private async void OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
+        private async Task OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
         {
             var request = tsRequest.Value;
             var context = client.ContextAs<AionWorkerContext>();
@@ -103,7 +103,7 @@ namespace Miningcore.Blockchain.Aion
             context.UserAgent = requestParams[0].Trim();
         }
 
-        private async void OnAuthorizeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
+        private async Task OnAuthorizeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
         {
             var request = tsRequest.Value;
             var context = client.ContextAs<AionWorkerContext>();
@@ -142,7 +142,7 @@ namespace Miningcore.Blockchain.Aion
             if (minimumPayment != null)
             {
                 context.MinimumPayment = Decimal.Parse(minimumPayment);
-                addOrUpdateMinerInfo(context);
+                await addOrUpdateMinerInfo(context);
             }
 
             await EnsureInitialWorkSent(client);
@@ -414,11 +414,11 @@ namespace Miningcore.Blockchain.Aion
                 switch (request.Method)
                 {
                     case AionStratumMethods.Subscribe:
-                        OnSubscribeAsync(client, tsRequest);
+                        await OnSubscribeAsync(client, tsRequest);
                         break;
 
                     case AionStratumMethods.Authorize:
-                        OnAuthorizeAsync(client, tsRequest);
+                        await OnAuthorizeAsync(client, tsRequest);
                         break;
 
                     case AionStratumMethods.SubmitShare:

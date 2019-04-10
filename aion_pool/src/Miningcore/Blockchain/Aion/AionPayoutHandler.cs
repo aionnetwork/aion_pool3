@@ -223,7 +223,7 @@ namespace Miningcore.Blockchain.Aion
 
                 try
                 {
-                    var txHash = await Payout(balance);
+                    var txHash = await PayoutAsync(balance);
                     txHashes.Add(txHash);
                 }
 
@@ -290,7 +290,7 @@ namespace Miningcore.Blockchain.Aion
             return result;
         }
 
-        private async Task<string> Payout(Balance balance)
+        private async Task<string> PayoutAsync(Balance balance)
         {
             DaemonResponse<string> response = null;
             

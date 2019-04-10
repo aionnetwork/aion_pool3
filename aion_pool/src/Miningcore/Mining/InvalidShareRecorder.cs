@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using Miningcore.Configuration;
 using Miningcore.Extensions;
@@ -74,12 +75,10 @@ namespace Miningcore.Mining
         private readonly int QueueSizeWarningThreshold = 1024;
         private readonly TimeSpan relayReceiveTimeout = TimeSpan.FromSeconds(60);
         private Policy faultPolicy;
-        private bool hasLoggedPolicyFallbackFailure;
         private bool hasWarnedAboutBacklogSize;
         private IDisposable queueSub;
         private const int RetryCount = 3;
         private const string PolicyContextKeyShares = "invalidShare";
-        private bool notifiedAdminOnPolicyFallback = false;
 
         private void PersistInvalidSharesFaulTolerant(IList<InvalidShare> shares)
         {
@@ -88,14 +87,14 @@ namespace Miningcore.Mining
             faultPolicy.Execute(() => PersistShares(shares));
         }
 
-        private void PersistShares(IList<InvalidShare> shares)
+        private async Task PersistShares(IList<InvalidShare> shares)
         {
-            cf.RunTx(async (con, tx) =>
+            await cf.RunTx(async (con, tx) =>
             {
                 foreach(var share in shares)
                 {
                     var shareEntity = mapper.Map<Miningcore.Persistence.Model.InvalidShare>(share);
-                    shareRepo.Insert(con, tx, shareEntity);
+                    await shareRepo.InsertAsync(con, tx, shareEntity);
                 }
             });
         }

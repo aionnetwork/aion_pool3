@@ -48,7 +48,7 @@ namespace Miningcore.Api.Controllers
             if (coinInfo == null || DateTime.Now.Subtract(coinInfo.Updated).TotalMinutes > 5)
             {
                 coinInfo = GetCoinInfoFromCryptoCompare(coinType);
-                cf.RunTx((con, tx) => coinInfoRepo.AddCoinInfo(con, tx, coinInfo));
+                await cf.RunTx((con, tx) => coinInfoRepo.AddCoinInfo(con, tx, coinInfo));
             }
 
             var response = new CoinInfoResponse

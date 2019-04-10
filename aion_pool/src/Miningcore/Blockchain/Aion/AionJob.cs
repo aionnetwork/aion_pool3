@@ -21,7 +21,6 @@ using Miningcore.Stratum;
 using Miningcore.Time;
 using Miningcore.Util;
 using Miningcore.DaemonInterface;
-using Miningcore.Configuration;
 using NBitcoin;
 using NBitcoin.DataEncoders;
 using NLog;
@@ -78,7 +77,7 @@ namespace Miningcore.Blockchain.Aion
             }
         }
 
-        public async Task<(Share Share, string nonce, string solution, string headerHash, string ntime)> ProcessShare(
+        public Task<(Share Share, string nonce, string solution, string headerHash, string ntime)> ProcessShareAsync(
             StratumClient worker, string extraNonce2, string nTime, string solution)
         {
             Contract.RequiresNonNull(worker, nameof(worker));
@@ -112,7 +111,7 @@ namespace Miningcore.Blockchain.Aion
             // duplicate check
             RegisterNonce(worker, nonce);
 
-            return ProcessShareInternal(worker, nonce, nTime, solution);
+            return Task.FromResult(ProcessShareInternal(worker, nonce, nTime, solution));
         }
 
          private (Share Share, string nonce, string solution, string headerHash, string nTime) ProcessShareInternal(

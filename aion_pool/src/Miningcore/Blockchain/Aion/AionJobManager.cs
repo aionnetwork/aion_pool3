@@ -106,7 +106,7 @@ namespace Miningcore.Blockchain.Aion
             }
 
             // validate & process
-            var (share, fullNonceHex, solution, headerHash, nTime) = await job.ProcessShare(worker, nonce, time, soln);
+            var (share, fullNonceHex, solution, headerHash, nTime) = await job.ProcessShareAsync(worker, nonce, time, soln);
             
             // enrich share with common data
             share.PoolId = poolConfig.Id;

@@ -70,7 +70,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
 
             query += "ORDER BY created DESC OFFSET @offset FETCH NEXT (@pageSize) ROWS ONLY";
 
-            var results = con.Query<Entities.Payment>(query, new { poolId, address, offset = page * pageSize, pageSize })
+            var results = (await con.QueryAsync<Entities.Payment>(query, new { poolId, address, offset = page * pageSize, pageSize }))
                 .Select(mapper.Map<Payment>)
                 .ToArray();
 

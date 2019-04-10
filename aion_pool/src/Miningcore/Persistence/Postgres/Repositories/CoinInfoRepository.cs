@@ -59,13 +59,13 @@ namespace Miningcore.Persistence.Postgres.Repositories
                     Updated = CoinInfo.Updated
                 };
 
-                con.Execute(query, coinInfo, tx);
+                await con.ExecuteAsync(query, coinInfo, tx);
             }
             else
             {
                 var query = "update coin_info set priceusd = @priceusd, pricebtc = @pricebtc, updated = @updated " +
                         " WHERE cointype = @cointype ";
-                con.Execute(query, new {
+                await con.ExecuteAsync(query, new {
                     priceusd = CoinInfo.PriceUSD,
                     pricebtc = CoinInfo.PriceBTC,
                     updated = CoinInfo.Updated,
@@ -79,7 +79,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             logger.LogInvoke();
 
             var query = "SELECT * FROM coin_info WHERE cointype = @coin ";
-            var results = con.Query<Entities.CoinInfo>(query, new { coin = coinType.ToString() })
+            var results = (await con.QueryAsync<Entities.CoinInfo>(query, new { coin = coinType.ToString() }))
                 .Select(mapper.Map<CoinInfo>)
                 .ToArray();
 

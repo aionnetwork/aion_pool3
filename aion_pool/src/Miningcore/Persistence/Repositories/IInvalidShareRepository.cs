@@ -8,7 +8,7 @@ namespace Miningcore.Persistence.Repositories
 {
     public interface IInvalidShareRepository
     {
-        void Insert(IDbConnection con, IDbTransaction tx, InvalidShare share);
+        Task InsertAsync(IDbConnection con, IDbTransaction tx, InvalidShare share);
         Task<long> CountInvalidSharesBetweenCreated(IDbConnection con, string poolId, string miner, DateTime? start, DateTime? end);
     }
 }

@@ -92,13 +92,13 @@ namespace Miningcore.Persistence.Postgres.Repositories
 
         public async Task<PoolValueStat[]> GetPoolConnectedMiners(IDbConnection con, string poolId, DateTime start, DateTime end)
         {
-            return getPoolValueStats(con, poolId, start, end,
+            return await getPoolValueStats(con, poolId, start, end,
                     "CAST(AVG(connectedminers) AS BIGINT) AS value ");
         }
 
         public async Task<PoolValueStat[]> GetPoolHashrate(IDbConnection con, string poolId, DateTime start, DateTime end)
         {
-            return getPoolValueStats(con, poolId, start, end,
+            return await getPoolValueStats(con, poolId, start, end,
                     "AVG(poolhashrate) AS value ");
         }
 
@@ -113,7 +113,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "FROM poolstats " +
                         "WHERE poolid = @poolId AND created >= @start AND created <= @end " +
                         groupStatement;
-            var values = con.Query<(DateTime, double, double)>(query, new { poolId, start, end }).ToArray();
+            var values = (await con.QueryAsync<(DateTime, double, double)>(query, new { poolId, start, end })).ToArray();
             List<PoolValueStat> stats = new List<PoolValueStat>();
             for (int i = 0; i < values.Length; i++)
             {
@@ -141,7 +141,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "WHERE poolid = @poolid AND created >= @start AND created <= @end " +
                         groupStatement;
                         
-            return con.Query<PoolValueStat>(query, new { poolId, start, end })
+            return (await con.QueryAsync<PoolValueStat>(query, new { poolId, start, end }))
                 .Select(mapper.Map<PoolValueStat>)
                 .ToArray();            
         }
@@ -156,7 +156,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "FROM payments " +
                         "WHERE poolid = @poolid AND created >= @start AND created <= @end " +
                         groupStatement;
-            return con.Query<PoolValueStat>(query, new { poolId, start, end })
+            return (await con.QueryAsync<PoolValueStat>(query, new { poolId, start, end }))
                 .Select(mapper.Map<PoolValueStat>)
                 .ToArray();            
         }
@@ -170,7 +170,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             return con.ExecuteScalarAsync<decimal>(query, new { poolId });
         }
 
-        public Task<WorkerPerformanceStatsContainer[]> GetMinerPerformance(IDbConnection con, string poolId, string miner, DateTime start, DateTime end)
+        public async Task<WorkerPerformanceStatsContainer[]> GetMinerPerformance(IDbConnection con, string poolId, string miner, DateTime start, DateTime end)
         {
             logger.LogInvoke(new[] { poolId });
             var granularity = getMinerStatsGranularity(con, poolId, miner, start, end);
@@ -182,7 +182,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
 
                         "ORDER BY created, worker;";
 
-            var entities = con.Query<Entities.MinerWorkerPerformanceStats>(query, new { poolId, miner, start, end })
+            var entities = (await con.QueryAsync<Entities.MinerWorkerPerformanceStats>(query, new { poolId, miner, start, end }))
                 .ToArray();
 
             // ensure worker is not null
@@ -219,7 +219,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             //}
 
             //return result.ToArray();
-            return Task.FromResult(tmp);
+            return tmp;
         }
 
         public async Task<PoolStats[]> GetPoolPerformanceBetweenAsync(IDbConnection con, string poolId, SampleInterval interval, DateTime start, DateTime end)
@@ -443,11 +443,11 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "FROM tmp t " +
                         "WHERE t.rk = 1 ";
 
-            var result = con.Query<Entities.MinerWorkerPerformanceStats>(query, new { poolId, from, offset = page * pageSize, pageSize })
+            var result = (await con.QueryAsync<Entities.MinerWorkerPerformanceStats>(query, new { poolId, from, offset = page * pageSize, pageSize }))
                 .Select(mapper.Map<MinerWorkerPerformanceStats>)
                 .ToArray();
 
-            var count = con.Query<int>(countQuery, new { poolId, from }).FirstOrDefault();
+            var count = (await con.QueryAsync<int>(countQuery, new { poolId, from })).FirstOrDefault();
 
             return new PagedResults<MinerWorkerPerformanceStats>
             {
@@ -474,7 +474,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             return con.ExecuteAsync(query, new { date });
         }
 
-        private PoolValueStat[] getPoolValueStats(IDbConnection con, string poolId, DateTime start, DateTime end, string valueQuery)
+        private async Task<PoolValueStat[]> getPoolValueStats(IDbConnection con, string poolId, DateTime start, DateTime end, string valueQuery)
         {
             logger.LogInvoke(new[] { poolId });
             StatsGranularity granularity = getPoolStatsGranularity(con, poolId, start, end);
@@ -485,7 +485,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "WHERE poolid = @poolId AND created >= @start AND created <= @end AND networkhashrate > 0 " +
 
                         groupStatement;
-            return con.Query<PoolValueStat>(query, new { poolId, start, end })
+            return (await con.QueryAsync<PoolValueStat>(query, new { poolId, start, end }))
                 .Select(mapper.Map<PoolValueStat>)
                 .ToArray();
         }
