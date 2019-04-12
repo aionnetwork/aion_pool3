@@ -170,7 +170,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
             return con.ExecuteScalarAsync<decimal>(query, new { poolId });
         }
 
-        public async Task<WorkerPerformanceStatsContainer[]> GetMinerPerformance(IDbConnection con, string poolId, string miner, DateTime start, DateTime end)
+        public async Task<WorkerPerformanceStatsContainer[]> GetMinerPerformanceAsync(IDbConnection con, string poolId, string miner, DateTime start, DateTime end)
         {
             logger.LogInvoke(new[] { poolId });
             var granularity = getMinerStatsGranularity(con, poolId, miner, start, end);

@@ -40,7 +40,7 @@ namespace Miningcore.Persistence.Repositories
         Task<WorkerPerformanceStatsContainer[]> GetMinerPerformanceBetweenDailyAsync(IDbConnection con, string poolId, string miner, DateTime start, DateTime end);
         Task<int> DeletePoolStatsBeforeAsync(IDbConnection con, DateTime date);
         Task<int> DeleteMinerStatsBeforeAsync(IDbConnection con, DateTime date);
-        Task<WorkerPerformanceStatsContainer[]> GetMinerPerformance(IDbConnection con, string poolId, string miner, DateTime start, DateTime end);
+        Task<WorkerPerformanceStatsContainer[]> GetMinerPerformanceAsync(IDbConnection con, string poolId, string miner, DateTime start, DateTime end);
         Task<PoolValueStat[]> GetPoolConnectedMiners(IDbConnection con, string poolId, DateTime start, DateTime end);
         Task<PoolValueStat[]> GetPoolHashrate(IDbConnection con, string poolId, DateTime start, DateTime end);
         Task<PoolValueStat[]> GetPoolNetworkPercentage(IDbConnection con, string poolId, DateTime start, DateTime end);

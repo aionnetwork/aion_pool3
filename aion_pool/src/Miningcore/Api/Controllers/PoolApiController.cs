@@ -419,6 +419,25 @@ namespace Miningcore.Api.Controllers
             return earnings;
         }
 
+        [HttpGet("{poolId}/miners/{address}/hashrate")]
+        public async Task<Responses.WorkerPerformanceStatsContainer[]> GetMinerPerformanceAsync(
+            string poolId, string address, long start, long end)
+        {
+            var pool = GetPool(poolId);
+            var (startDate, endDate) = parseStartEndRequestParams(start, end);
+
+            if (string.IsNullOrEmpty(address))
+                throw new ApiException($"Invalid or missing miner address", HttpStatusCode.NotFound);
+
+            Persistence.Model.Projections.WorkerPerformanceStatsContainer[] stats = null;
+            stats = await cf.Run(con => statsRepo.GetMinerPerformanceAsync(
+                        con, pool.Id, address, startDate, endDate));
+
+            // map
+            var result = mapper.Map<Responses.WorkerPerformanceStatsContainer[]>(stats);
+            return result;
+        }
+
         [HttpGet("{poolId}/miners/{address}/performance")]
         public async Task<Responses.WorkerPerformanceStatsContainer[]> GetMinerPerformanceAsync(
             string poolId, string address, [FromQuery] SampleRange mode = SampleRange.Day)
@@ -428,9 +447,7 @@ namespace Miningcore.Api.Controllers
             if (string.IsNullOrEmpty(address))
                 throw new ApiException($"Invalid or missing miner address", HttpStatusCode.NotFound);
 
-            var result = await GetMinerPerformanceInternal(mode, pool, address);
-
-            return result;
+            return await GetMinerPerformanceInternal(mode, pool, address);
         }
 
         #endregion // Actions
@@ -501,7 +518,6 @@ namespace Miningcore.Api.Controllers
                         con, pool.Id, address, start, end));
                     break;
             }
-
             // map
             var result = mapper.Map<Responses.WorkerPerformanceStatsContainer[]>(stats);
             return result;

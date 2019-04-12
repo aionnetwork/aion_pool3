@@ -72,7 +72,7 @@ export const statsWithFilters = (hash, start, end) => {
       .then(poolId => {
         getMinerPerformance(poolId, hash, start, end).then(minerPerformance => {
           minerPerformance.map(
-            m => (m.created = new Date(m.created).valueOf())
+            m => (m.created = new Date(m.created).valueOf() / 1000)
           );
           dispatch({
             type: GET_CHART_DETAILS_SUCCESS,

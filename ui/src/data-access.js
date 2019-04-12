@@ -33,7 +33,7 @@ export const getMinerPerformance = (
   makeRequest(
     `${
       config.apiUrl
-    }/pools/${poolId}/miners/${minerAddress}/performance?start=${start}&end=${end}`
+    }/pools/${poolId}/miners/${minerAddress}/hashrate?start=${start}&end=${end}`
   );
 
 export const getMinerPayments = (poolId, minerAddress, page, pageSize) =>
