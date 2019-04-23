@@ -41,14 +41,14 @@
     "equihashMaxThreads": 4,
     "paymentProcessing": {
         "enabled": true,
-        "interval": 600,
+        "interval": 20,
         "shareRecoveryFile": "recovered-shares.txt"
     },
     "pools": [{
         "id": "aion-pool-1",
         "enabled": true,
         "coin": "aion",
-        "address": "0xa0a0953954f2b4c7c4e7a6d6c8b2039dbe8b8125babca9fbc2336131dc4d2a46",
+        "address": "0xa0f707e6dd054e69f14e9185ca57cea855e385a138dbae8e319bd9b1ef9f9212",
         "rewardRecipients": [
             {
                 "type": "op",
@@ -84,6 +84,12 @@
         "daemons": [
             {
                 "host": "127.0.0.1",
+                "port": 8545,
+                "user": "",
+                "password": ""
+            },
+            {
+                "host": "192.168.1.67",
                 "port": 8545,
                 "user": "",
                 "password": ""

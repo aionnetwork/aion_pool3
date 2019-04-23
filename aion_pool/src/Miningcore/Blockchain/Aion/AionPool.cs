@@ -143,6 +143,9 @@ namespace Miningcore.Blockchain.Aion
             {
                 context.MinimumPayment = Decimal.Parse(minimumPayment);
                 await addOrUpdateMinerInfo(context);
+            } else 
+            {
+                await deleteMinerInfo(context);
             }
 
             await EnsureInitialWorkSent(client);
@@ -170,6 +173,13 @@ namespace Miningcore.Blockchain.Aion
             {
                 await minerInfoRepository.AddMinerInfo(con, tx, poolConfig.Id, context.MinerName, context.MinimumPayment);
             });
+        }
+
+        private async Task deleteMinerInfo(AionWorkerContext context) {
+            await cf.RunTx(async (con, tx) =>
+                {
+                    await minerInfoRepository.DeleteMinerInfo(con, tx, poolConfig.Id, context.MinerName);
+                });
         }
 
         private async Task OnSubmitAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
