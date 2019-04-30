@@ -172,16 +172,14 @@ namespace Miningcore.Blockchain.Aion
 
         protected override async Task PostStartInitAsync(CancellationToken ct)
         {
-            SetupJobUpdates();
+            await SetupJobUpdatesAsync();
             await GetBlockTemplateAsync();            
         }
 
-        protected virtual void SetupJobUpdates()
+        protected async Task SetupJobUpdatesAsync()
         {
-	        if (poolConfig.EnableInternalStratum == false)
-		        return;
-
-            Jobs = Observable.Interval(TimeSpan.FromMilliseconds(poolConfig.BlockRefreshInterval))
+            await Task.Run(() => {
+                Jobs = Observable.Interval(TimeSpan.FromMilliseconds(poolConfig.BlockRefreshInterval))
                     .Select(_ => Observable.FromAsync(UpdateJobAsync))
                     .Concat()
                     .Do(isNew =>
@@ -193,6 +191,7 @@ namespace Miningcore.Blockchain.Aion
                     .Select(_ => GetJobParamsForStratum())
                     .Publish()
                     .RefCount();
+            });
         }
 
         protected async Task<bool> UpdateJobAsync()

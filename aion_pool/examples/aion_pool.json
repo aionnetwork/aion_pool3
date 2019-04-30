@@ -48,11 +48,11 @@
         "id": "aion-pool-1",
         "enabled": true,
         "coin": "aion",
-        "address": "0xa0f707e6dd054e69f14e9185ca57cea855e385a138dbae8e319bd9b1ef9f9212",
+        "address": "0xa0a51ca53bd44ce95f73786fc6bd40d0f531b0ec3a639890d8e864a8c2c68e37",
         "rewardRecipients": [
             {
                 "type": "op",
-                "address": "0xa0875232a15313aaf343c23be7c962f85407b0f9c639fac3c7c4782657d9a3de",
+                "address": "0xa0d9d701ac22b5d6c8c10452f1ee70b73cdd9411b93ade9946d90bbdb56448e0",
                 "percentage": 1
             }
         ],
@@ -103,7 +103,7 @@
             "payoutSchemeConfig": {
                 "factor": 2.0
             },
-            "accountPassword": "asd",
+            "accountPassword": "password",
             "keepTransactionFees": true,
             "minimumConfirmations": 1,
             "nrgFee": 0.0001,
