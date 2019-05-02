@@ -139,11 +139,13 @@ namespace Miningcore.Blockchain.Aion
                 context.SetDifficulty(staticDiff.Value);
             }
 
-            if (minimumPayment != null)
+            // do not update the miner info on cluster configs for slave instances - there is no db connection
+            if (clusterConfig.ShareRelay == null && minimumPayment != null)
             {
                 context.MinimumPayment = Decimal.Parse(minimumPayment);
                 await addOrUpdateMinerInfo(context);
-            } else 
+            } 
+            else if(clusterConfig.ShareRelay == null)
             {
                 await deleteMinerInfo(context);
             }
