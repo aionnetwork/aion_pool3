@@ -609,7 +609,7 @@ namespace Miningcore.Configuration
         public string SharedEncryptionKey { get; set; }
     }
 
-    public partial class ShareRelayEndpointConfig
+    public partial class RelayEndpointConfig
     {
         public string Url { get; set; }
 
@@ -619,7 +619,7 @@ namespace Miningcore.Configuration
         public string SharedEncryptionKey { get; set; }
     }
 
-    public partial class ShareRelayConfig
+    public partial class RelayConfig
     {
         public string PublishUrl { get; set; }
 
@@ -693,12 +693,12 @@ namespace Miningcore.Configuration
         /// but published on the specified ZeroMQ Url and using the
         /// poolid as topic
         /// </summary>
-        public ShareRelayConfig ShareRelay { get; set; }
+        public RelayConfig Relay { get; set; }
 
         /// <summary>
         /// External relays to monitor for shares (see option above)
         /// </summary>
-        public ShareRelayEndpointConfig[] ShareRelays { get; set; }
+        public RelayEndpointConfig[] Relays { get; set; }
 
         /// <summary>
         /// Maximum parallelism of Equihash solver

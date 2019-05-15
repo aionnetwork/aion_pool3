@@ -27,9 +27,9 @@ namespace Miningcore.Mining
     /// <summary>
     /// Receives external shares from relays and re-publishes for consumption
     /// </summary>
-    public class ShareReceiver
+    public class RelayReceiver
     {
-        public ShareReceiver(IMasterClock clock, IMessageBus messageBus)
+        public RelayReceiver(IMasterClock clock, IMessageBus messageBus)
         {
             Contract.RequiresNonNull(clock, nameof(clock));
             Contract.RequiresNonNull(messageBus, nameof(messageBus));
@@ -70,11 +70,11 @@ namespace Miningcore.Mining
         {
             Task.Run(() =>
             {
-                Thread.CurrentThread.Name = "ShareReceiver Socket Poller";
+                Thread.CurrentThread.Name = "RelayReceiver Socket Poller";
                 var timeout = TimeSpan.FromMilliseconds(1000);
                 var reconnectTimeout = TimeSpan.FromSeconds(60);
 
-                var relays = clusterConfig.ShareRelays
+                var relays = clusterConfig.Relays
                     .DistinctBy(x => $"{x.Url}:{x.SharedEncryptionKey}")
                     .ToArray();
 
@@ -121,7 +121,7 @@ namespace Miningcore.Mining
                                     }
 
                                     if (error != null)
-                                        logger.Error(() => $"{nameof(ShareReceiver)}: {error.Name} [{error.Name}] during receive");
+                                        logger.Error(() => $"{nameof(RelayReceiver)}: {error.Name} [{error.Name}] during receive");
                                 }
                             }
                         }
@@ -129,7 +129,7 @@ namespace Miningcore.Mining
 
                     catch (Exception ex)
                     {
-                        logger.Error(() => $"{nameof(ShareReceiver)}: {ex}");
+                        logger.Error(() => $"{nameof(RelayReceiver)}: {ex}");
 
                         if (!cts.IsCancellationRequested)
                             Thread.Sleep(5000);
@@ -138,7 +138,7 @@ namespace Miningcore.Mining
             }, cts.Token);
         }
 
-        private static ZSocket SetupSubSocket(ShareRelayEndpointConfig relay)
+        private static ZSocket SetupSubSocket(RelayEndpointConfig relay)
         {
             var subSocket = new ZSocket(ZSocketType.SUB);
             subSocket.SetupCurveTlsClient(relay.SharedEncryptionKey, logger);
@@ -188,12 +188,13 @@ namespace Miningcore.Mining
             // extract frames
             var topic = msg[0].ToString(Encoding.UTF8);
             var flags = msg[1].ReadUInt32();
-            var data = msg[2].Read();
+            var contentType = msg[2].ToString(Encoding.UTF8);
+            var data = msg[3].Read();
 
             // validate
             if (string.IsNullOrEmpty(topic) || !pools.ContainsKey(topic))
             {
-                logger.Warn(() => $"Received share for pool '{topic}' which is not known locally. Ignoring ...");
+                logger.Warn(() => $"Received object for pool '{topic}' which is not known locally. Ignoring ...");
                 return;
             }
 
@@ -204,35 +205,33 @@ namespace Miningcore.Mining
             }
 
             // TMP FIX
-            if ((flags & ShareRelay.WireFormatMask) == 0)
+            if ((flags & RelayInfo.WireFormatMask) == 0)
                 flags = BitConverter.ToUInt32(BitConverter.GetBytes(flags).ToNewReverseArray());
 
             // deserialize
-            var wireFormat = (ShareRelay.WireFormat)(flags & ShareRelay.WireFormatMask);
-
-            Share share = null;
-
+            var wireFormat = (RelayInfo.WireFormat)(flags & RelayInfo.WireFormatMask);
+            Object obj = null;
+            RelayContentType contentTypeEnum = (RelayContentType) Enum.Parse(typeof(RelayContentType), contentType);
             switch (wireFormat)
             {
-                case ShareRelay.WireFormat.Json:
+                case RelayInfo.WireFormat.Json:
                     using (var stream = new MemoryStream(data))
                     {
                         using (var reader = new StreamReader(stream, Encoding.UTF8))
                         {
                             using (var jreader = new JsonTextReader(reader))
                             {
-                                share = serializer.Deserialize<Share>(jreader);
+                                obj = DeserializeJson(jreader, contentTypeEnum);
                             }
                         }
                     }
 
                     break;
 
-                case ShareRelay.WireFormat.ProtocolBuffers:
+                case RelayInfo.WireFormat.ProtocolBuffers:
                     using (var stream = new MemoryStream(data))
                     {
-                        share = Serializer.Deserialize<Share>(stream);
-                        share.BlockReward = (decimal)share.BlockRewardDouble;
+                        obj = DeserializeProtoBuf(stream, contentTypeEnum);
                     }
 
                     break;
@@ -242,13 +241,91 @@ namespace Miningcore.Mining
                     break;
             }
 
-            if (share == null)
+            if (obj == null)
             {
-                logger.Error(() => $"Unable to deserialize share received from {url}/{topic}");
+                logger.Error(() => $"Unable to deserialize object received from {url}/{topic}");
                 return;
             }
 
+            ProcessEntity(obj, contentTypeEnum, topic);
+        }
+
+        #region API-Surface
+
+        public void AttachPool(IMiningPool pool)
+        {
+            pools[pool.Config.Id] = new PoolContext(pool, LogUtil.GetPoolScopedLogger(typeof(ShareRecorder), pool.Config));
+        }
+
+        public void Start(ClusterConfig clusterConfig)
+        {
+            this.clusterConfig = clusterConfig;
+
+            if (clusterConfig.Relays != null)
+            {
+                StartMessageReceiver();
+                StartMessageProcessors();
+            }
+        }
+
+        public void Stop()
+        {
+            logger.Info(() => "Stopping ..");
+
+            cts.Cancel();
+            disposables.Dispose();
+
+            logger.Info(() => "Stopped");
+        }
+
+        private Object DeserializeProtoBuf(MemoryStream stream, RelayContentType contentType) {
+            switch (contentType) {
+                case RelayContentType.Share:
+                    return Serializer.Deserialize<Share>(stream);
+                case RelayContentType.InvalidShare:
+                    return Serializer.Deserialize<InvalidShare>(stream);
+                case RelayContentType.MinerInfo:
+                    return Serializer.Deserialize<MinerInfo>(stream);                    
+                default:
+                    return null;
+            }
+        }
+
+        private Object DeserializeJson(JsonTextReader stream, RelayContentType contentType) {
+            switch (contentType) {
+                case RelayContentType.Share:
+                    return serializer.Deserialize<Share>(stream);
+                case RelayContentType.InvalidShare:
+                    return serializer.Deserialize<InvalidShare>(stream);
+                case RelayContentType.MinerInfo:
+                    return serializer.Deserialize<MinerInfo>(stream);                    
+                default:
+                    return null;
+            }
+        }
+
+        private void ProcessEntity(Object t, RelayContentType contentType, string topic)
+        {
+            switch (contentType) {
+                case RelayContentType.Share:
+                    ProcessShare((Share) t, topic);
+                    break;
+                case RelayContentType.InvalidShare:
+                    ProcessInvalidShare((InvalidShare) t);
+                    break;
+                case RelayContentType.MinerInfo:
+                    ProcessMinerInfo((MinerInfo) t);
+                    break;    
+                default:
+                    break;
+            }
+         
+        }
+
+        private void ProcessShare(Share share, string topic) 
+        {
             // store
+            share.BlockReward = (decimal)share.BlockRewardDouble;
             share.PoolId = topic;
             share.Created = clock.Now;
             messageBus.SendMessage(new ClientShare(null, share));
@@ -284,32 +361,15 @@ namespace Miningcore.Mining
                 logger.Info(() => $"External {(!string.IsNullOrEmpty(share.Source) ? $"[{share.Source.ToUpper()}] " : string.Empty)}share accepted: D={Math.Round(share.Difficulty, 3)}");
         }
 
-        #region API-Surface
-
-        public void AttachPool(IMiningPool pool)
+        private void ProcessInvalidShare(InvalidShare share)
         {
-            pools[pool.Config.Id] = new PoolContext(pool, LogUtil.GetPoolScopedLogger(typeof(ShareRecorder), pool.Config));
+            share.Created = clock.Now;
+            messageBus.SendMessage(share);
         }
 
-        public void Start(ClusterConfig clusterConfig)
+        private void ProcessMinerInfo(MinerInfo minerInfo)
         {
-            this.clusterConfig = clusterConfig;
-
-            if (clusterConfig.ShareRelays != null)
-            {
-                StartMessageReceiver();
-                StartMessageProcessors();
-            }
-        }
-
-        public void Stop()
-        {
-            logger.Info(() => "Stopping ..");
-
-            cts.Cancel();
-            disposables.Dispose();
-
-            logger.Info(() => "Stopped");
+            messageBus.SendMessage(minerInfo);
         }
 
         #endregion // API-Surface

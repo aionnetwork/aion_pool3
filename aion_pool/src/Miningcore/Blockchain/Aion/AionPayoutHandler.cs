@@ -213,7 +213,7 @@ namespace Miningcore.Blockchain.Aion
 
             foreach (var balance in balances)
             {
-                MinerInfo miner = await cf.RunTx(async (con, tx) =>
+                Miningcore.Persistence.Model.MinerInfo miner = await cf.RunTx(async (con, tx) =>
                 {
                     return await minerInfoRepository.GetMinerInfo(con, tx, poolConfig.Id, balance.Address);
                 });

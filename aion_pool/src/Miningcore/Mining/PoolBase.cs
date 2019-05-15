@@ -260,7 +260,7 @@ namespace Miningcore.Mining
 
         protected virtual async Task InitStatsAsync()
         {
-            if (clusterConfig.ShareRelay == null)
+            if (clusterConfig.Relay == null)
                 await LoadStatsAsync();
         }
 

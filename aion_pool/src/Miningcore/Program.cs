@@ -87,8 +87,9 @@ namespace Miningcore
         private static bool isShareRecoveryMode;
         private static ShareRecorder shareRecorder;
         private static InvalidShareRecorder invalidShareRecorder;
-        private static ShareRelay shareRelay;
-        private static ShareReceiver shareReceiver;
+        private static MinerInfoRecorder minerInfoRecorder;
+        private static Relay relay;
+        private static RelayReceiver relayReceiver;
         private static PayoutManager payoutManager;
         private static StatsRecorder statsRecorder;
         private static ClusterConfig clusterConfig;
@@ -192,7 +193,7 @@ namespace Miningcore
             foreach(var config in clusterConfig.Pools)
             {
                 if (!config.EnableInternalStratum.HasValue)
-                    config.EnableInternalStratum = clusterConfig.ShareRelays == null || clusterConfig.ShareRelays.Length == 0;
+                    config.EnableInternalStratum = clusterConfig.Relays == null || clusterConfig.Relays.Length == 0;
             }
 
             try
@@ -551,7 +552,7 @@ namespace Miningcore
         {
             if (clusterConfig.Persistence == null &&
                 clusterConfig.PaymentProcessing?.Enabled == true &&
-                clusterConfig.ShareRelay == null)
+                clusterConfig.Relay == null)
                 logger.ThrowLogPoolStartupException("Persistence is not configured!");
 
             if (clusterConfig.Persistence?.Postgres != null)
@@ -780,26 +781,31 @@ namespace Miningcore
             btStreamReceiver = container.Resolve<BtStreamReceiver>();
             btStreamReceiver.Start(clusterConfig);
 
-            if (clusterConfig.ShareRelay == null)
+            if (clusterConfig.Relay == null)
             {
                 // start share recorder
                 shareRecorder = container.Resolve<ShareRecorder>();
                 shareRecorder.Start(clusterConfig);
 
                 // start share receiver (for external shares)
-                shareReceiver = container.Resolve<ShareReceiver>();
-                shareReceiver.Start(clusterConfig);
+                relayReceiver = container.Resolve<RelayReceiver>();
+                relayReceiver.Start(clusterConfig);
+
+                // start invalid share recorder
+                invalidShareRecorder = container.Resolve<InvalidShareRecorder>();
+                invalidShareRecorder.Start(clusterConfig);
+
+                // start miner info recorder
+                minerInfoRecorder = container.Resolve<MinerInfoRecorder>();
+                minerInfoRecorder.Start(clusterConfig);
             }
 
             else
             {
                 // start share relay
-                shareRelay = container.Resolve<ShareRelay>();
-                shareRelay.Start(clusterConfig);
+                relay = container.Resolve<Relay>();
+                relay.Start(clusterConfig);              
             }
-
-            invalidShareRecorder = container.Resolve<InvalidShareRecorder>();
-            invalidShareRecorder.Start(clusterConfig);
 
             // start API
             if (clusterConfig.Api == null || clusterConfig.Api.Enabled)
@@ -818,7 +824,7 @@ namespace Miningcore
             else
                 logger.Info("Payment processing is not enabled");
 
-            if (clusterConfig.ShareRelay == null)
+            if (clusterConfig.Relay == null)
             {
                 // start pool stats updater
                 statsRecorder = container.Resolve<StatsRecorder>();
@@ -839,7 +845,7 @@ namespace Miningcore
                 pools[poolConfig.Id] = pool;
 
                 // pre-start attachments
-                shareReceiver?.AttachPool(pool);
+                relayReceiver?.AttachPool(pool);
                 statsRecorder?.AttachPool(pool);
                 //apiServer?.AttachPool(pool);
 
@@ -905,8 +911,8 @@ namespace Miningcore
             foreach(var pool in pools.Values)
                 pool.Stop();
 
-            shareRelay?.Stop();
-            shareReceiver?.Stop();
+            relay?.Stop();
+            relayReceiver?.Stop();
             shareRecorder?.Stop();
             invalidShareRecorder?.Stop();
             statsRecorder?.Stop();

@@ -85,17 +85,20 @@ namespace Miningcore
                 .SingleInstance();
 
             builder.RegisterType<InvalidShareRecorder>()
-                .SingleInstance();                
+                .SingleInstance();
 
-            builder.RegisterType<ShareReceiver>()
+            builder.RegisterType<MinerInfoRecorder>()
+                .SingleInstance();                            
+
+            builder.RegisterType<RelayReceiver>()
                 .SingleInstance();
 
             builder.RegisterType<BtStreamReceiver>()
                 .SingleInstance();
 
-            builder.RegisterType<ShareRelay>()
+            builder.RegisterType<Relay>()
                 .SingleInstance();
-
+                
             builder.RegisterType<StatsRecorder>()
                 .AsSelf();
 

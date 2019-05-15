@@ -24,7 +24,7 @@ using Newtonsoft.Json;
 namespace Miningcore.Api.Responses
 {
 
-    public class CryoptoCompareResponse {
+    public class CryptoCompareResponse {
         public double BTC {get; set; }
         public double USD {get; set; }
     }

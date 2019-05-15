@@ -66,7 +66,7 @@ namespace Miningcore.Api.Controllers
         {
             var url = "https://min-api.cryptocompare.com/data/price?fsym=" + coinType.ToString().ToUpper() + "&tsyms=BTC,USD";
             var json = new WebClient().DownloadString(url);
-            var response = JsonConvert.DeserializeObject<CryoptoCompareResponse>(json);
+            var response = JsonConvert.DeserializeObject<CryptoCompareResponse>(json);
             return new CoinInfo
             {
                 CoinType = coinType.ToString(),

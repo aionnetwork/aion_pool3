@@ -59,16 +59,13 @@ namespace Miningcore.Blockchain.Aion
             IStatsRepository statsRepo,
             IMapper mapper,
             IMasterClock clock,
-            IMinerInfoRepository minerInfoRepository,
             IMessageBus messageBus) :
             base(ctx, serializerSettings, cf, statsRepo, mapper, clock, messageBus)
         {
-            this.minerInfoRepository = minerInfoRepository;
         }
 
         private object currentJobParams;
         private AionJobManager manager;
-        private IMinerInfoRepository minerInfoRepository;
 
         private async Task OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
         {
@@ -139,49 +136,13 @@ namespace Miningcore.Blockchain.Aion
                 context.SetDifficulty(staticDiff.Value);
             }
 
-            // do not update the miner info on cluster configs for slave instances - there is no db connection
-            if (clusterConfig.ShareRelay == null && minimumPayment != null)
-            {
-                context.MinimumPayment = Decimal.Parse(minimumPayment);
-                await addOrUpdateMinerInfo(context);
-            } 
-            else if(clusterConfig.ShareRelay == null)
-            {
-                await deleteMinerInfo(context);
-            }
+            messageBus.SendMessage(new MinerInfo(poolConfig.Id, 
+                context.MinerName, minimumPayment != null ? context.MinimumPayment = Decimal.Parse(minimumPayment) : 0));
 
             await EnsureInitialWorkSent(client);
 
             // log association
             logger.Info(() => $"[{client.ConnectionId}] Authorized worker {workerValue}");
-        }
-
-        private async Task addOrUpdateMinerInfo(AionWorkerContext context)
-        {
-            MinerInfo minerInfo = await cf.RunTx(async (con, tx) =>
-            {
-                return await minerInfoRepository.GetMinerInfo(con, tx, poolConfig.Id, context.MinerName);
-            });
-
-            if (minerInfo != null)
-            {
-                await cf.RunTx(async (con, tx) =>
-                {
-                    await minerInfoRepository.DeleteMinerInfo(con, tx, poolConfig.Id, context.MinerName);
-                });
-            }
-
-            await cf.RunTx(async (con, tx) =>
-            {
-                await minerInfoRepository.AddMinerInfo(con, tx, poolConfig.Id, context.MinerName, context.MinimumPayment);
-            });
-        }
-
-        private async Task deleteMinerInfo(AionWorkerContext context) {
-            await cf.RunTx(async (con, tx) =>
-                {
-                    await minerInfoRepository.DeleteMinerInfo(con, tx, poolConfig.Id, context.MinerName);
-                });
         }
 
         private async Task OnSubmitAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)

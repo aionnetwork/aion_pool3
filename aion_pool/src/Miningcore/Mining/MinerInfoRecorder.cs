@@ -16,7 +16,7 @@ using Miningcore.Messaging;
 using Miningcore.Notifications;
 using Miningcore.Notifications.Messages;
 using Miningcore.Persistence;
-using Miningcore.Persistence.Model;
+using Miningcore.Blockchain;
 using Miningcore.Persistence.Repositories;
 using Miningcore.Time;
 using Miningcore.Util;
@@ -25,25 +25,24 @@ using NLog;
 using Polly;
 using Polly.CircuitBreaker;
 using Contract = Miningcore.Contracts.Contract;
-using InvalidShare = Miningcore.Blockchain.InvalidShare;
 
 namespace Miningcore.Mining
 {
     /// <summary>
-    /// Asynchronously persist invalid shares produced by all pools for processing by coin-specific payment processor(s)
+    /// Asynchronously persist miner infos produced by all pools for processing by coin-specific payment processor(s)
     /// </summary>
-    public class InvalidShareRecorder
+    public class MinerInfoRecorder
     {
-        public InvalidShareRecorder(IConnectionFactory cf, IMapper mapper,
+        public MinerInfoRecorder(IConnectionFactory cf, IMapper mapper,
             JsonSerializerSettings jsonSerializerSettings,
-            IInvalidShareRepository shareRepo,
+            IMinerInfoRepository minerInfoRepository,
             IMasterClock clock,
             IMessageBus messageBus,
             NotificationService notificationService)
         {
             Contract.RequiresNonNull(cf, nameof(cf));
             Contract.RequiresNonNull(mapper, nameof(mapper));
-            Contract.RequiresNonNull(shareRepo, nameof(shareRepo));
+            Contract.RequiresNonNull(minerInfoRepository, nameof(minerInfoRepository));
             Contract.RequiresNonNull(jsonSerializerSettings, nameof(jsonSerializerSettings));
             Contract.RequiresNonNull(clock, nameof(clock));
             Contract.RequiresNonNull(messageBus, nameof(messageBus));
@@ -56,13 +55,13 @@ namespace Miningcore.Mining
             this.messageBus = messageBus;
             this.notificationService = notificationService;
 
-            this.shareRepo = shareRepo;
+            this.minerInfoRepository = minerInfoRepository;
 
             BuildFaultHandlingPolicy();
         }
 
         private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        private readonly IInvalidShareRepository shareRepo;
+        private readonly IMinerInfoRepository minerInfoRepository;
         private readonly IConnectionFactory cf;
         private readonly JsonSerializerSettings jsonSerializerSettings;
         private readonly IMasterClock clock;
@@ -70,7 +69,7 @@ namespace Miningcore.Mining
         private readonly NotificationService notificationService;
         private ClusterConfig clusterConfig;
         private readonly IMapper mapper;
-        private readonly BlockingCollection<InvalidShare> queue = new BlockingCollection<InvalidShare>();
+        private readonly BlockingCollection<MinerInfo> queue = new BlockingCollection<MinerInfo>();
 
         private readonly int QueueSizeWarningThreshold = 1024;
         private readonly TimeSpan relayReceiveTimeout = TimeSpan.FromSeconds(60);
@@ -78,23 +77,23 @@ namespace Miningcore.Mining
         private bool hasWarnedAboutBacklogSize;
         private IDisposable queueSub;
         private const int RetryCount = 3;
-        private const string PolicyContextKeyInvalidShares = "invalidShare";
+        private const string PolicyContextKeyMinerInfo = "minerInfo";
 
-        private void PersistInvalidSharesFaulTolerant(IList<InvalidShare> shares)
+        private void PersistMinerInfosFaulTolerant(IList<MinerInfo> minerInfos)
         {
-            var context = new Dictionary<string, object> { { PolicyContextKeyInvalidShares, shares } };
+            var context = new Dictionary<string, object> { { PolicyContextKeyMinerInfo, minerInfos } };
 
-            faultPolicy.Execute(() => PersistShares(shares));
+            faultPolicy.Execute(() => AddOrUpdateInfos(minerInfos));
         }
 
-        private async Task PersistShares(IList<InvalidShare> shares)
+        private async Task AddOrUpdateInfos(IList<MinerInfo> minerInfos)
         {
             await cf.RunTx(async (con, tx) =>
             {
-                foreach(var share in shares)
+                foreach(var minerInfo in minerInfos)
                 {
-                    var shareEntity = mapper.Map<Miningcore.Persistence.Model.InvalidShare>(share);
-                    await shareRepo.InsertAsync(con, tx, shareEntity);
+                    var minerInfoEntity = mapper.Map<Miningcore.Persistence.Model.MinerInfo>(minerInfo);
+                    await AddOrUpdateMinerInfo(minerInfoEntity);
                 }
             });
         }
@@ -134,18 +133,18 @@ namespace Miningcore.Mining
 
         private void InitializeQueue()
         {
-            messageBus.Listen<InvalidShare>().Subscribe(x => queue.Add(x));
+            messageBus.Listen<MinerInfo>().Subscribe(x => queue.Add(x));
 
             queueSub = queue.GetConsumingEnumerable()
                 .ToObservable(TaskPoolScheduler.Default)
                 .Do(_ => CheckQueueBacklog())
                 .Buffer(TimeSpan.FromSeconds(1), 100)
-                .Where(shares => shares.Any())
-                .Subscribe(shares =>
+                .Where(minerInfos => minerInfos.Any())
+                .Subscribe(minerInfos =>
                 {
                     try
                     {
-                        PersistInvalidSharesFaulTolerant(shares);
+                        PersistMinerInfosFaulTolerant(minerInfos);
                     }
 
                     catch(Exception ex)
@@ -155,13 +154,47 @@ namespace Miningcore.Mining
                 });
         }
 
+        private async Task AddOrUpdateMinerInfo(Miningcore.Persistence.Model.MinerInfo minerInfo)
+        {   
+            if(minerInfo.MinimumPayment == 0) 
+            {
+                await deleteMinerInfo(minerInfo);
+                return;
+            }
+            
+            Miningcore.Persistence.Model.MinerInfo retrieved = await cf.RunTx(async (con, tx) =>
+            {
+                return await minerInfoRepository.GetMinerInfo(con, tx, minerInfo.PoolId, minerInfo.Miner);
+            });
+
+            if (minerInfo != null)
+            {
+                await cf.RunTx(async (con, tx) =>
+                {
+                    await minerInfoRepository.DeleteMinerInfo(con, tx, minerInfo.PoolId, minerInfo.Miner);
+                });
+            }
+
+            await cf.RunTx(async (con, tx) =>
+            {
+                await minerInfoRepository.AddMinerInfo(con, tx, minerInfo.PoolId, minerInfo.Miner, minerInfo.MinimumPayment);
+            });
+        }
+
+        private async Task deleteMinerInfo(Miningcore.Persistence.Model.MinerInfo context) {
+            await cf.RunTx(async (con, tx) =>
+                {
+                    await minerInfoRepository.DeleteMinerInfo(con, tx, context.PoolId, context.Miner);
+                });
+        }
+
         private void CheckQueueBacklog()
         {
             if (queue.Count > QueueSizeWarningThreshold)
             {
                 if (!hasWarnedAboutBacklogSize)
                 {
-                    logger.Warn(() => $"Invalid share persistence queue backlog has crossed {QueueSizeWarningThreshold}");
+                    logger.Warn(() => $"Miner info queue backlog has crossed {QueueSizeWarningThreshold}");
                     hasWarnedAboutBacklogSize = true;
                 }
             }

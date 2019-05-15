@@ -102,7 +102,7 @@ namespace Miningcore.Mining
                                     }
 
                                     if (error != null)
-                                        logger.Error(() => $"{nameof(ShareReceiver)}: {error.Name} [{error.Name}] during receive");
+                                        logger.Error(() => $"{nameof(RelayReceiver)}: {error.Name} [{error.Name}] during receive");
                                 }
                             }
                         }
@@ -110,7 +110,7 @@ namespace Miningcore.Mining
 
                     catch (Exception ex)
                     {
-                        logger.Error(() => $"{nameof(ShareReceiver)}: {ex}");
+                        logger.Error(() => $"{nameof(RelayReceiver)}: {ex}");
 
                         if (!cts.IsCancellationRequested)
                             Thread.Sleep(1000);
