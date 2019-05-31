@@ -79,10 +79,9 @@ namespace Miningcore.Persistence.Postgres.Repositories
             logger.LogInvoke();
 
             var query = "SELECT * FROM coin_info WHERE cointype = @coin ";
-            var results = (await con.QueryAsync<Entities.CoinInfo>(query, new { coin = coinType.ToString() }))
+ var results = ( con.Query<Entities.CoinInfo>(query, new { coin = coinType.ToString() }))
                 .Select(mapper.Map<CoinInfo>)
                 .ToArray();
-
             if (results == null || results.Length == 0)
                 return null;
 
