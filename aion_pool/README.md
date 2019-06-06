@@ -77,7 +77,7 @@ This software comes with a built-in donation of 0.1% per block-reward to support
 Create the database:
 
 ```console
-$ createuser miningcore
+$ create user miningcore
 $ createdb miningcore
 $ psql (enter the password for postgres)
 ```
