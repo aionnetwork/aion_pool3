@@ -217,7 +217,7 @@ namespace Miningcore.Mining
                                 minerTotalHashrate += hashrate;
 
                                 // update
-                                stats.Hashrate = hashrate;
+                                stats.Hashrate = item.Sum / windowActual;
                                 stats.Worker = item.Worker;
                                 stats.SharesPerSecond = (double) item.Count / windowActual;
 

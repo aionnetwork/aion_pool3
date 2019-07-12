@@ -8,7 +8,7 @@ namespace Miningcore.Blockchain.Aion
     class AionUtils 
     {
         public static decimal calculateReward(long height) {
-            var blockReward = 1513791761415494031;
+            var blockReward = 1512969176075743286;
             var magnitude = 1000000000000000000;
             var rampUpLowerBound = 0;
             var rampUpUpperBound = 259200;

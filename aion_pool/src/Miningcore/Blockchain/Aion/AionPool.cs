@@ -412,7 +412,6 @@ namespace Miningcore.Blockchain.Aion
 
         public override double HashrateFromShares(double shares, double interval)
         {
-            // TODO: UPDATE HERE
             this.poolStats.PoolHashrate = Convert.ToUInt64(manager.PoolHashRate);
             return this.poolStats.PoolHashrate;
         }

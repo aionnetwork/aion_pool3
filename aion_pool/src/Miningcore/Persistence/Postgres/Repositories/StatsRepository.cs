@@ -425,7 +425,7 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "		ROW_NUMBER() OVER(PARTITION BY ms.miner ORDER BY ms.hashrate DESC) AS rk  " +
                         "	FROM (SELECT miner, AVG(hashrate) AS hashrate, AVG(sharespersecond) AS sharespersecond " +
                         "       FROM minerstats " +
-                        "       WHERE poolid = @poolid AND created >= @from GROUP BY miner, created) ms " +
+                        "       WHERE poolid = @poolid AND created >= @from GROUP BY miner) ms " +
                         ") " +
                         "SELECT t.miner, t.hashrate, t.sharespersecond, " +
                         "(SELECT SUM(amount) FROM payments where poolid = @poolid AND address = t.miner) as totalpaid " +
