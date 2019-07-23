@@ -58,7 +58,7 @@
         "id": "aion-pool-1",
         "enabled": true,
         "coin": "aion",
-        "address": "0xa0a0953954f2b4c7c4e7a6d6c8b2039dbe8b8125babca9fbc2336131dc4d2a46",
+        "address": "0xa0a3fed1b4b1b21a43c0eddb65c758550fd0120c9c25610cc11947afbc14d859",
         "rewardRecipients": [
             {
                 "type": "op",
@@ -113,7 +113,13 @@
             "nrgFee": 0.0001,
             "minimumPeerCount": 1,
             "privateKey": "",
-            "sendTransactionsUsingPrivateKey": false
+            "sendTransactionsUsingPrivateKey": false,
+            "networkForkBlock": 2393000,
+            "initialSupply": 314000000000000000000000000,
+            "__masteryInitialSupply": 314000000000000000000000000,
+            "__masteryForkBlock": 2393000,
+            "__mainnetInitialSupply": 465934586660000000000000000,
+            "__mainnetForkBlock": 3346000            
         }
     }]
 }

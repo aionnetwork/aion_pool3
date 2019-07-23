@@ -103,7 +103,13 @@
             "nrgFee": 0.0001,
             "minimumPeerCount": 1,
             "privateKey": "",
-            "sendTransactionsUsingPrivateKey": false
+            "sendTransactionsUsingPrivateKey": false,
+            "networkForkBlock": 3346000,
+            "initialSupply": 465934586660000000000000000,
+            "__masteryInitialSupply": 314000000000000000000000000,
+            "__masteryForkBlock": 2393000,
+            "__mainnetInitialSupply": 465934586660000000000000000,
+            "__mainnetForkBlock": 3346000            
         }
     }]
 }

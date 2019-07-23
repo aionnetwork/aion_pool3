@@ -153,7 +153,7 @@ namespace Miningcore.Blockchain.Aion
                         {
                             block.Status = BlockStatus.Confirmed;
                             block.ConfirmationProgress = 1;
-                            block.Reward = AionUtils.calculateReward((long) block.BlockHeight);
+                            block.Reward = AionUtils.calculateReward((long) block.BlockHeight, extraConfig.InitialSupply, extraConfig.NetworkForkBlock);
 
                             if (extraConfig?.KeepTransactionFees == false && blockInfo.Transactions?.Length > 0)
                                 block.Reward += await GetTxRewardAsync(blockInfo); // tx fees

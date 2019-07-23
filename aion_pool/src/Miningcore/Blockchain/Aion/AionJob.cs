@@ -165,7 +165,7 @@ namespace Miningcore.Blockchain.Aion
 
             if (isBlockCandidate)
             {
-                result.BlockReward = AionUtils.calculateReward((long) BlockTemplate.Height);
+                // result.BlockReward = AionUtils.calculateReward((long) BlockTemplate.Height);
                 result.BlockHash = headerHashReversed.ToHexString();
             }
 

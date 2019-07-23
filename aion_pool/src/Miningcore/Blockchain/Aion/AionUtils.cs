@@ -7,9 +7,25 @@ namespace Miningcore.Blockchain.Aion
 {
     class AionUtils 
     {
-        public static decimal calculateReward(long height) {
-            var blockReward = 1512969176075743286;
-            var magnitude = 1000000000000000000;
+        public static decimal calculateReward(long height, decimal initialSupply, decimal forkBlock = 3346000) {
+            if(height < forkBlock) {
+                return calculateOldReward(height);
+            }
+
+            return calculateCurrentReward(height, forkBlock, calculateTotalSupply(initialSupply, forkBlock));
+        }
+
+        public static decimal calculateTotalSupply(decimal initialSupply, decimal forkBlock) {
+            var ts = initialSupply;
+            for(var i = 1; i <= forkBlock; i++) {
+                ts += calculateReward(i, forkBlock, initialSupply);
+            }
+
+            return ts;
+        }
+
+        public static decimal calculateOldReward(long height) {
+            decimal blockReward = 1497989283243310185;
             var rampUpLowerBound = 0;
             var rampUpUpperBound = 259200;
             var rampUpStartValue = 748994641621655092;
@@ -19,10 +35,31 @@ namespace Miningcore.Blockchain.Aion
             var m = (rampUpEndValue - rampUpStartValue) / delta;
 
             if (height <= rampUpUpperBound) {
-                return ((decimal) (m * height) + rampUpStartValue) / magnitude;
+                return (m * height) + rampUpStartValue;
             } else {
-                return (decimal) blockReward / magnitude;
+                return blockReward;
             }
+        }
+
+        public static decimal calculateCurrentReward(long height, decimal forkBlock, decimal initialSupply) {
+            var startingBlockNum = forkBlock;
+            var annum = 3110400;
+            var interestBasePoint = 100;
+            var magnitude = 1000000000000000000;
+            var inflationRate = 10000 + interestBasePoint;
+            var term = (int) ((height - startingBlockNum - 1) / annum + 1);
+            var divider = 10000;
+            BigInteger compound = BigInteger.Multiply(new BigInteger(divider), new BigInteger(initialSupply));
+            BigInteger preCompound = compound;
+
+            for (long i = 0; i < term; i++) {
+                preCompound = compound;
+                compound = preCompound * inflationRate / divider;
+            }
+
+            compound = compound - preCompound;
+
+            return (decimal) BigInteger.Divide(BigInteger.Divide(compound, annum), divider) / magnitude;
         }
 
         public static string diffToTarget(double diff)
