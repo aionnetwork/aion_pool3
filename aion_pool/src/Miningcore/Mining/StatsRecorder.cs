@@ -162,21 +162,10 @@ namespace Miningcore.Mining
                     {
                         var poolHashesAccumulated = result.Sum(x => x.Sum);
                         var poolHashesCountAccumulated = result.Sum(x => x.Count);
-                        var poolHashrate = pool.HashrateFromShares(poolHashesAccumulated, windowActual) * HashrateBoostFactor;
 
-                        // update
                         pool.PoolStats.ConnectedMiners = byMiner.Length;
-                        pool.PoolStats.PoolHashrate = (ulong) Math.Ceiling(poolHashrate);
                         pool.PoolStats.SharesPerSecond = (int) (poolHashesCountAccumulated / windowActual);
-
-                        messageBus.NotifyHashrateUpdated(pool.Config.Id, poolHashrate);
                     }
-                } else {
-                    pool.PoolStats.ConnectedMiners = 0;
-                    pool.PoolStats.PoolHashrate = 0;
-                    pool.PoolStats.SharesPerSecond = 0;
-
-                    messageBus.NotifyHashrateUpdated(pool.Config.Id, 0);
                 }
 
                 // persist
@@ -198,6 +187,8 @@ namespace Miningcore.Mining
                     continue;
 
                 // calculate & update miner, worker hashrates
+                // new poolHashRate
+                double poolHashRate = 0;
                 foreach(var minerHashes in byMiner)
                 {
                     double minerTotalHashrate = 0;
@@ -217,9 +208,12 @@ namespace Miningcore.Mining
                                 minerTotalHashrate += hashrate;
 
                                 // update
-                                stats.Hashrate = item.Sum / windowActual;
+                                stats.Hashrate = hashrate;
                                 stats.Worker = item.Worker;
                                 stats.SharesPerSecond = (double) item.Count / windowActual;
+
+                                // update poolHashRate
+                                poolHashRate += hashrate;
 
                                 // persist
                                 await statsRepo.InsertMinerWorkerPerformanceStatsAsync(con, tx, stats);
@@ -228,8 +222,12 @@ namespace Miningcore.Mining
                             }
                         }
                     });
-
                     messageBus.NotifyHashrateUpdated(pool.Config.Id, minerTotalHashrate, stats.Miner, null);
+
+                // presist poolHashRate
+                pool.PoolStats.PoolHashrate = (ulong) Math.Ceiling(poolHashRate);
+                // poolHashRate messageBus from above
+                messageBus.NotifyHashrateUpdated(pool.Config.Id, poolHashRate);
                 }
             }
         }

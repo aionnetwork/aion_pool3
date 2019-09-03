@@ -8,8 +8,9 @@ namespace Miningcore.Blockchain.Aion
     class AionUtils 
     {
         public static decimal calculateReward(long height, decimal initialSupply, decimal forkBlock = 3346000) {
+            var magnitude = 1000000000000000000;
             if(height < forkBlock) {
-                return calculateOldReward(height);
+                return calculateOldReward(height) / magnitude;
             }
 
             return calculateCurrentReward(height, forkBlock, calculateTotalSupply(initialSupply, forkBlock));

@@ -77,10 +77,10 @@
         },
         "ports": {
             "3333": {
-                "difficulty": 128,
+                "difficulty": 32,
                 "varDiff": {
-                    "minDiff": 64,
-                    "maxDiff": 512,
+                    "minDiff": 32,
+                    "maxDiff": 32,
                     "targetTime": 5,
                     "retargetTime": 5,
                     "variancePercent": 30,
@@ -88,7 +88,7 @@
                 }
             },
             "3334": {
-                "difficulty": 128
+                "difficulty": 32
             }
         },
         "daemons": [
@@ -114,8 +114,8 @@
             "minimumPeerCount": 1,
             "privateKey": "",
             "sendTransactionsUsingPrivateKey": false,
-            "networkForkBlock": 2393000,
-            "initialSupply": 314000000000000000000000000,
+            "networkForkBlock": 3346000,
+            "initialSupply": 465934586660000000000000000,
             "__masteryInitialSupply": 314000000000000000000000000,
             "__masteryForkBlock": 2393000,
             "__mainnetInitialSupply": 465934586660000000000000000,

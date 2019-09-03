@@ -412,8 +412,8 @@ namespace Miningcore.Blockchain.Aion
 
         public override double HashrateFromShares(double shares, double interval)
         {
-            this.poolStats.PoolHashrate = Convert.ToUInt64(manager.PoolHashRate);
-            return this.poolStats.PoolHashrate;
+            var result = shares / interval;
+            return result;
         }
 
         protected override async Task OnVarDiffUpdateAsync(StratumClient client, double newDiff)
