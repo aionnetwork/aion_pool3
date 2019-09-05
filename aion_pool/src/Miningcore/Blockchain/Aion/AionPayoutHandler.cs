@@ -79,6 +79,7 @@ namespace Miningcore.Blockchain.Aion
         private int latestNonce = 0;
         private bool usedLatestNonce = false;
         private AionPoolPaymentExtraConfig extraConfig;
+        private AionRewardsCalculator rewardsCalculator;
 
         private IMinerInfoRepository minerInfoRepository;
 
@@ -103,6 +104,7 @@ namespace Miningcore.Blockchain.Aion
 
             daemon = new DaemonClient(jsonSerializerSettings, messageBus, clusterConfig.ClusterName ?? poolConfig.PoolName, poolConfig.Id);
             daemon.Configure(daemonEndpoints);
+            rewardsCalculator = new AionRewardsCalculator(extraConfig.NetworkForkBlock, new BigInteger(extraConfig.InitialSupply));
         }
 
         public async Task<Block[]> ClassifyBlocksAsync(Block[] blocks)
@@ -153,7 +155,7 @@ namespace Miningcore.Blockchain.Aion
                         {
                             block.Status = BlockStatus.Confirmed;
                             block.ConfirmationProgress = 1;
-                            block.Reward = AionUtils.calculateReward((long) block.BlockHeight, extraConfig.InitialSupply, extraConfig.NetworkForkBlock);
+                            block.Reward = rewardsCalculator.calculateReward((long) block.BlockHeight);
 
                             if (extraConfig?.KeepTransactionFees == false && blockInfo.Transactions?.Length > 0)
                                 block.Reward += await GetTxRewardAsync(blockInfo); // tx fees
