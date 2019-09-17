@@ -189,7 +189,7 @@ namespace Miningcore.Mining
             var topic = msg[0].ToString(Encoding.UTF8);
             var flags = msg[1].ReadUInt32();
             var contentType = msg[2].ToString(Encoding.UTF8);
-            var data = msg[3].Read();
+            var data = msg.Count > 3 ? msg[3].Read() : new byte[0];
 
             // validate
             if (string.IsNullOrEmpty(topic) || !pools.ContainsKey(topic))

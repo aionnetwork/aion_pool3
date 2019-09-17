@@ -25,6 +25,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Numerics;
 using Autofac;
 using AutoMapper;
@@ -66,6 +67,7 @@ namespace Miningcore.Blockchain.Aion
 
         private object currentJobParams;
         private AionJobManager manager;
+        protected static readonly Regex regexMinimumPayment = new Regex(@";?mp=(\d*(\.\d+)?)", RegexOptions.Compiled);
 
         private async Task OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
         {
@@ -117,7 +119,7 @@ namespace Miningcore.Blockchain.Aion
             var workerParts = workerValue?.Split('.');
             var minerName = workerParts?.Length > 0 ? workerParts[0].Trim() : null;
             var workerName = workerParts?.Length > 1 ? workerParts[1].Trim() : null;
-            var minimumPayment = workerParts?.Length > 2 ? workerParts[2].Trim() : null;
+            var minimumPayment = GetMinimumPaymentFromPassparts(passParts);
 
             // assumes that workerName is an address
             context.IsAuthorized = !string.IsNullOrEmpty(minerName) && await manager.ValidateAddressAsync(minerName);
@@ -137,7 +139,7 @@ namespace Miningcore.Blockchain.Aion
             }
 
             messageBus.SendMessage(new MinerInfo(poolConfig.Id, 
-                context.MinerName, minimumPayment != null ? context.MinimumPayment = Decimal.Parse(minimumPayment) : 0));
+                context.MinerName, context.MinimumPayment = minimumPayment));
 
             await EnsureInitialWorkSent(client);
 
@@ -363,6 +365,25 @@ namespace Miningcore.Blockchain.Aion
             {
                 logger.ThrowLogPoolStartupException("Invalid pool address. Please check your configuration file.");
             }
+        }
+
+        private Decimal GetMinimumPaymentFromPassparts(string[] parts)
+        {
+            if (parts == null || parts.Length == 0)
+                return 0;
+
+            foreach(var part in parts)
+            {
+                var m = regexMinimumPayment.Match(part);
+
+                if (m.Success)
+                {
+                    var str = m.Groups[1].Value.Trim();
+                    return Decimal.Parse(str);
+                }
+            }
+
+            return 0;
         }
 
         protected override async Task InitStatsAsync()
