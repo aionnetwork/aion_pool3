@@ -34,6 +34,23 @@
             "notifyBlockFound": true
         }
     },
+    "api": {
+        "enabled": true,
+        "listenAddress": "0.0.0.0",
+        "port": 4000,
+        "metricsIpWhitelist": [],
+        "rateLimiting": {
+           "disabled": false,
+           "rules": [
+              {
+                 "Endpoint": "*",
+                 "Period": "1s",
+                 "Limit": 5
+              }
+           ],
+           "ipWhitelist": []
+        }
+     },
     "persistence": {
         "postgres": {
             "host": "127.0.0.1",
