@@ -140,5 +140,5 @@ create table if not exists miner_info
 create index if not exists idx_invalid_shares_pool_miner on invalid_shares(poolid, miner);
 create index if not exists idx_invalid_shares_pool_miner_created on invalid_shares(poolid, miner, created);
 
-alter table blocks add column if not exists txfees decimal(28,12);
+-- alter table blocks add column if not exists txfees decimal(28,12);
 create index if not exists idx_payments_poolid_address on payments(poolid, address);

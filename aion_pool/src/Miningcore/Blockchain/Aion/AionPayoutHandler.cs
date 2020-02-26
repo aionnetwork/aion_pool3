@@ -104,7 +104,7 @@ namespace Miningcore.Blockchain.Aion
 
             daemon = new DaemonClient(jsonSerializerSettings, messageBus, clusterConfig.ClusterName ?? poolConfig.PoolName, poolConfig.Id);
             daemon.Configure(daemonEndpoints);
-            rewardsCalculator = new AionRewardsCalculator(extraConfig.NetworkForkBlock, new BigInteger(extraConfig.InitialSupply));
+            rewardsCalculator = new AionRewardsCalculator();
         }
 
         public async Task<Block[]> ClassifyBlocksAsync(Block[] blocks)

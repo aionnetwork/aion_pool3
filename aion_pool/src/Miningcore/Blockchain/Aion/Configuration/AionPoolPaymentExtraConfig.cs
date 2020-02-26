@@ -49,7 +49,5 @@ namespace Miningcore.Blockchain.Aion.Configuration
         public string PrivateKey { get; set; }
         public bool SendTransactionsUsingPrivateKey { get; set; }
         public bool EnableMinerMinimumPayment { get; set; }
-        public long NetworkForkBlock { get; set; }
-        public decimal InitialSupply { get; set; }
     }
 }
