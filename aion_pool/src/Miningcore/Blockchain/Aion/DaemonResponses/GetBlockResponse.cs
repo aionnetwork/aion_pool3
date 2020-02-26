@@ -55,6 +55,7 @@ namespace Miningcore.Blockchain.Aion.DaemonResponses
         /// <summary>
         /// block number where this transaction was in. null when its pending.
         /// </summary>
+        [JsonConverter(typeof(ToUlongJsonConverter))]
         public ulong? BlockNumber { get; set; }
 
         /// <summary>
