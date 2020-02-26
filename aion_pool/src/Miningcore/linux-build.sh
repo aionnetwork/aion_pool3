@@ -23,7 +23,7 @@ cp ../Native/libmultihash/libmultihash.so $BUILDIR
 (cd ../Native/libmultihash && make clean)
 
 # copy libmultihash to bin for Visual Code
-mkdir -p ./bin/Debug/netcoreapp2.0/ ./bin/Release/netcoreapp2.1/ ../Miningcore.Tests/bin/Debug/netcoreapp2.1/ ../Miningcore.Tests/bin/Release/netcoreapp2.1/
+mkdir -p ./bin/Debug/netcoreapp2.1/ ./bin/Release/netcoreapp2.1/ ../Miningcore.Tests/bin/Debug/netcoreapp2.1/ ../Miningcore.Tests/bin/Release/netcoreapp2.1/
 cp ../../build/libmultihash.so ./bin/Debug/netcoreapp2.1/
 cp ../../build/libmultihash.so ./bin/Release/netcoreapp2.1/
 cp ../../build/libmultihash.so ../Miningcore.Tests/bin/Debug/netcoreapp2.1/
