@@ -202,6 +202,12 @@ namespace Miningcore.Configuration
                 .NotEmpty()
                 .WithMessage("Pool: Wallet address missing or empty");
 
+            RuleFor(j => j.BlockRefreshInterval)
+                .NotNull()
+                .NotEmpty()
+                .When(j => j.BlockRefreshInterval <= 0)
+                .WithMessage("Pool: BlockRefreshInterval must exist and > 0");
+
             RuleFor(j => j.Daemons)
                 .NotNull()
                 .NotEmpty()
