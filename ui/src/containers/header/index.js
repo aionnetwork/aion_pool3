@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 import MenuItem from "./menuItem";
-import logo from "../assets/logo_aion.svg";
-import logo_short from "../assets/logo_aion_mobile.svg";
+import logo from "../assets/logo_oan.jpg";
+import logo_short from "../assets/logo_oan_mobile.jpg";
 import { AppToaster } from "../../components/toaster";
 import { connect } from "react-redux";
 
