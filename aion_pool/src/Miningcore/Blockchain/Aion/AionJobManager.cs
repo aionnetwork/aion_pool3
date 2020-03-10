@@ -218,7 +218,7 @@ namespace Miningcore.Blockchain.Aion
             try
             {
                 // may happen if daemon is currently not connected to peers
-                if (blockTemplate == null || blockTemplate.HeaderHash?.Length == 0)
+                if (blockTemplate == null || blockTemplate.HeaderHash == null || blockTemplate.HeaderHash?.Length == 0)
                     return false;
         
                 var job = currentJob;
