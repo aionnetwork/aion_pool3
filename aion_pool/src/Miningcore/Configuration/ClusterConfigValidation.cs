@@ -197,16 +197,21 @@ namespace Miningcore.Configuration
                 .SetValidator(x => new PoolEndpointValidator())
                 .When(x => x.Ports != null);
 
+            RuleFor(j => j.BlockRefreshInterval)
+                .Must((pc, interval, ctx) => {
+                    if (interval >0) {
+                        ctx.MessageFormatter.AppendArgument("interval", interval);
+                        return false;
+                    }
+                    return true;
+                })
+                .When(x => x.Coin == "aion")
+                .WithMessage("Pool: BlockRefreshInterval for coin aion is deprecated: {interval}");
+
             RuleFor(j => j.Address)
                 .NotNull()
                 .NotEmpty()
                 .WithMessage("Pool: Wallet address missing or empty");
-
-            RuleFor(j => j.BlockRefreshInterval)
-                .NotNull()
-                .NotEmpty()
-                .When(j => j.BlockRefreshInterval <= 0)
-                .WithMessage("Pool: BlockRefreshInterval must exist and > 0");
 
             RuleFor(j => j.Daemons)
                 .NotNull()
