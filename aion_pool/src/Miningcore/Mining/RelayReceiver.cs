@@ -324,6 +324,7 @@ namespace Miningcore.Mining
 
         private void ProcessShare(Share share, string topic) 
         {
+            logger.Info(() => $"receive share: miner={share.Miner} height={share.BlockHeight}");
             // store
             share.BlockReward = (decimal)share.BlockRewardDouble;
             share.PoolId = topic;
@@ -369,6 +370,7 @@ namespace Miningcore.Mining
 
         private void ProcessMinerInfo(MinerInfo minerInfo)
         {
+            logger.Info(() => $"receive minerinfo: pool_id={minerInfo.PoolId} Miner={minerInfo.Miner} mp={minerInfo.MinimumPayment}");
             messageBus.SendMessage(minerInfo);
         }
 

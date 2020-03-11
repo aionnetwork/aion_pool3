@@ -136,6 +136,7 @@ namespace Miningcore.Blockchain.Aion
             
             var isBlockCandidate = target > headerValue;
 
+            logger.Info(() => $"context.Difficulty:{context.Difficulty} Difficulty: {Difficulty}");
             // calc share-diff
             var stratumDifficulty = context.Difficulty > Difficulty ? Difficulty : context.Difficulty; 
             var shareDiff = stratumDifficulty;           
@@ -181,6 +182,7 @@ namespace Miningcore.Blockchain.Aion
 
         private double getNetworkDifficulty() {
             var response = daemonClient.ExecuteCmdAnyAsync<string>(logger, AionCommands.GetDifficulty).Result;
+            logger.Info(()=>$"getdifficulty: {response}");
             return (double) Convert.ToInt32(response.Response, 16);
         }
     }

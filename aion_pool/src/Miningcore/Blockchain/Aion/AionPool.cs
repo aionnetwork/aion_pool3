@@ -144,7 +144,7 @@ namespace Miningcore.Blockchain.Aion
             await EnsureInitialWorkSent(client);
 
             // log association
-            logger.Info(() => $"[{client.ConnectionId}] Authorized worker {workerValue}");
+            logger.Info(() => $"[{client.ConnectionId}] Authorized worker {workerValue} mp {minimumPayment}");
         }
 
         private async Task OnSubmitAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)

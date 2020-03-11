@@ -201,6 +201,11 @@ namespace Miningcore.Payments.PaymentSchemes
                 {
                     var share = page[i];
 
+                    if (share.NetworkDifficulty == 0) {
+                        logger.Warn(()=>$"skip this share, network difficulty is 0. poolId={share.PoolId} miner={share.Miner} height={share.BlockHeight}");
+                        continue;
+                    }
+
                     // build address
                     var address = share.Miner;
 

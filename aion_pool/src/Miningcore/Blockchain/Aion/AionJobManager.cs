@@ -178,8 +178,9 @@ namespace Miningcore.Blockchain.Aion
 
         protected async Task SetupJobUpdatesAsync()
         {
+            // deprecate BlockRefreshInterval config, use 200ms as default.
             await Task.Run(() => {
-                Jobs = Observable.Interval(TimeSpan.FromMilliseconds(poolConfig.BlockRefreshInterval))
+                Jobs = Observable.Interval(TimeSpan.FromMilliseconds(200))
                     .Select(_ => Observable.FromAsync(UpdateJobAsync))
                     .Concat()
                     .Do(isNew =>
