@@ -26,9 +26,10 @@ namespace Miningcore.Serialization
       }
       ulong val;
       if (str.StartsWith("0x")) {
+        str = str.Substring(2);
         val = ulong.Parse("0" + str, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
       } else {
-        val = ulong.Parse("0" + str, CultureInfo.InvariantCulture);
+        val = ulong.Parse("0" + str, NumberStyles.None, CultureInfo.InvariantCulture);
       }
       return Convert.ChangeType(val, typeof(ulong));
     }
