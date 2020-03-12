@@ -182,7 +182,7 @@ namespace Miningcore.Blockchain.Aion
 
         private double getNetworkDifficulty() {
             var response = daemonClient.ExecuteCmdAnyAsync<string>(logger, AionCommands.GetDifficulty).Result;
-            logger.Info(()=>$"getdifficulty: {response}");
+            logger.Debug(()=>$"getdifficulty: {response.Response}");
             return (double) Convert.ToInt32(response.Response, 16);
         }
     }
