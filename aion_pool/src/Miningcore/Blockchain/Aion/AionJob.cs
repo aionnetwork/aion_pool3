@@ -136,7 +136,7 @@ namespace Miningcore.Blockchain.Aion
             
             var isBlockCandidate = target > headerValue;
 
-            logger.Info(() => $"context.Difficulty:{context.Difficulty} Difficulty: {Difficulty}");
+            logger.Debug(() => $"context.Difficulty:{context.Difficulty} Difficulty: {Difficulty}");
             // calc share-diff
             var stratumDifficulty = context.Difficulty > Difficulty ? Difficulty : context.Difficulty; 
             var shareDiff = stratumDifficulty;           
