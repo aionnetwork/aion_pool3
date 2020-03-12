@@ -117,7 +117,8 @@ For details, please refer to Java and Rust kernel guides.
 
 ## [Pool Configuration](./docs/Configuration.md)
 
-## Miner
+## Start Pool
+#### Start miner
 ```
 $ ./miner --algo aion --server <stratum_server> --port <stratum_port> --user <miner_address>.<worker_name> --pass mp=<minimum_payment>;d=<static_diff>
 ```
@@ -128,4 +129,12 @@ $ ./miner --algo aion --server <stratum_server> --port <stratum_port> --user <mi
 Example:
 ```
 $ ./miner --algo aion --server localhost --port 3333 --user 0xa0f499fe8fc35c31b0c8a802d947744d765f7c555d01b2b69ef7a9d894bbbfd4.w1 --pass mp=15
+```
+
+#### Start kernel
+
+#### Start pool
+```shell
+$ cd ../../build
+$ dotnet Miningcore.dll -c aion_pool.json
 ```
