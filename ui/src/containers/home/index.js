@@ -46,7 +46,7 @@ class Home extends Component {
           lastMinedBlocks={lastMinedBlocks}
           isLoadingStats={isLoadingStats}
         />
-        <HowToMine />
+        {/* <HowToMine /> */}
       </div>
     );
   }
