@@ -138,3 +138,16 @@ $ ./miner --algo aion --server localhost --port 3333 --user 0xa0f499fe8fc35c31b0
 $ cd ../../build
 $ dotnet Miningcore.dll -c aion_pool.json
 ```
+
+# Database Migration from aion_pool2
+1. remove ``payoutinfo`` column in ``shares`` table
+2. remove ``coin`` column in ``balances`` table
+3. remove ``coin`` in ``balance_changes`` table
+4. add table ``miner_info``
+```sql
+create table if not exists miner_info (
+	poolid text not null,
+	miner text not null,
+	minimumpayment decimal(28, 12) NOT NULL DEFAULT 0
+);
+```
