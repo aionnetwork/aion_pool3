@@ -349,7 +349,7 @@ namespace Miningcore.Blockchain.Aion
                     }));
 
                 // // we need work before opening the gates
-                await manager.Jobs.Take(1).ToTask(ct);
+                // await manager.Jobs.Take(1).ToTask(ct);
             }
             else
             {

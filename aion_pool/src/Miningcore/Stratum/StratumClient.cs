@@ -288,8 +288,10 @@ public class StratumClient
                 var buffer = result.Buffer;
                 SequencePosition? position = null;
 
-                if (buffer.Length > MaxInboundRequestLength)
+                if (buffer.Length > MaxInboundRequestLength) {
+                    logger.Info(() => $"[{ConnectionId}] [PIPE] Received data: length={buffer.Length} {result.Buffer.AsString(StratumConstants.Encoding)}");
                     throw new InvalidDataException($"Incoming data exceeds maximum of {MaxInboundRequestLength}");
+                }
 
                 logger.Debug(() => $"[{ConnectionId}] [PIPE] Received data: {result.Buffer.AsString(StratumConstants.Encoding)}");
 
