@@ -348,8 +348,8 @@ namespace Miningcore.Blockchain.Aion
                         logger.Debug(ex, nameof(OnNewJobAsync));
                     }));
 
-                // // we need work before opening the gates
-                // await manager.Jobs.Take(1).ToTask(ct);
+                // we need work before opening the gates
+                await manager.Jobs.Take(1).ToTask(ct);
             }
             else
             {
