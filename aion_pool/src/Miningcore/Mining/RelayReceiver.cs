@@ -193,7 +193,7 @@ namespace Miningcore.Mining
 
             foreach (var item in msg)
             {
-                logger.Debug(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + item.toString(Encoding.UTF8));
+                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + item.toString(Encoding.UTF8));
             }
 
             // validate

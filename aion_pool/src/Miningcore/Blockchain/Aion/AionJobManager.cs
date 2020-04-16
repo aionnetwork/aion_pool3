@@ -101,8 +101,10 @@ namespace Miningcore.Blockchain.Aion
             // stale?
             lock(jobLock)
             {
-                if (!validJobs.TryGetValue(jobId, out job))
+                if (!validJobs.TryGetValue(jobId, out job)){
+                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/SubmitShareAsync stale-share jobId '{jobId}'");
                     throw new StratumException(StratumError.MinusOne, "stale share");
+                }
             }
 
             // validate & process
@@ -242,8 +244,10 @@ namespace Miningcore.Blockchain.Aion
                         var obsoleteKeys = validJobs.Keys
                             .Where(key => (long) validJobs[key].BlockTemplate.Height < (long) (job.BlockTemplate.Height - MaxBlockBacklog)).ToArray();
 
-                        foreach (var key in obsoleteKeys)
+                        foreach (var key in obsoleteKeys){
+                            logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob job-remove key '{key}' height '{(long) validJobs[key].BlockTemplate.Height}' current-height '{(long)job.BlockTemplate.Height}'");
                             validJobs.Remove(key);
+                        }
                     }
 
                     currentJob = job;
