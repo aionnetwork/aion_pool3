@@ -191,6 +191,11 @@ namespace Miningcore.Mining
             var contentType = msg[2].ToString(Encoding.UTF8);
             var data = msg.Count > 3 ? msg[3].Read() : new byte[0];
 
+            foreach (var item in msg)
+            {
+                logger.Debug(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + item.toString(Encoding.UTF8));
+            }
+
             // validate
             if (string.IsNullOrEmpty(topic) || !pools.ContainsKey(topic))
             {
@@ -211,7 +216,9 @@ namespace Miningcore.Mining
             // deserialize
             var wireFormat = (RelayInfo.WireFormat)(flags & RelayInfo.WireFormatMask);
             Object obj = null;
+
             RelayContentType contentTypeEnum = (RelayContentType) Enum.Parse(typeof(RelayContentType), contentType);
+            
             switch (wireFormat)
             {
                 case RelayInfo.WireFormat.Json:
