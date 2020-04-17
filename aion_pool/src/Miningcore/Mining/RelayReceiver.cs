@@ -219,12 +219,13 @@ namespace Miningcore.Mining
             var wireFormat = (RelayInfo.WireFormat)(flags & RelayInfo.WireFormatMask);
             Object obj = null;
 
-            if (!Enum.TryParse(typeof(RelayContentType), contentType)){
+            Object contentTypeEnumObject = null;
+            if (!Enum.TryParse(typeof(RelayContentType), contentType, true, out contentTypeEnumObject)) {
                 logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage TryParse Exception uuid=" + uuid);
                 return;
             }
 
-            RelayContentType contentTypeEnum = (RelayContentType) Enum.Parse(typeof(RelayContentType), contentType);
+            RelayContentType contentTypeEnum = (RelayContentType) contentTypeEnumObject;
             
             switch (wireFormat)
             {
