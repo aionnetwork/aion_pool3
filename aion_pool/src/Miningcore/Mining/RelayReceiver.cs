@@ -185,15 +185,17 @@ namespace Miningcore.Mining
 
         private void ProcessMessage(string url, ZMessage msg)
         {
+            
             // extract frames
             var topic = msg[0].ToString(Encoding.UTF8);
             var flags = msg[1].ReadUInt32();
             var contentType = msg[2].ToString(Encoding.UTF8);
             var data = msg.Count > 3 ? msg[3].Read() : new byte[0];
 
+            String uuid = System.Guid.NewGuid().ToString();
             foreach (var item in msg)
             {
-                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + item.ToString(Encoding.UTF8));
+                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + uuid + " " + item.ToString(Encoding.UTF8));
             }
 
             // validate
