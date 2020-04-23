@@ -273,6 +273,7 @@ namespace Miningcore.Blockchain.Aion
 
             logger.Debug(() => $"Broadcasting job");
 
+            logger.Info(() => "!!! src/Miningcore/Blockchain/Aion/AionPool.cs/OnNewJobAsync");
             var tasks = ForEachClient(async client =>
             {
                 var context = client.ContextAs<AionWorkerContext>();
