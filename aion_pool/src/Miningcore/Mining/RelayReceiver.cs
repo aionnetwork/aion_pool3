@@ -195,7 +195,7 @@ namespace Miningcore.Mining
             String uuid = System.Guid.NewGuid().ToString();
             foreach (var item in msg)
             {
-                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + uuid + " " + item.ToString(Encoding.UTF8));
+                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + uuid + " " + item.ToString(Encoding.UTF8) + " slave=" + url);
             }
 
             // validate
@@ -221,7 +221,7 @@ namespace Miningcore.Mining
 
             Object contentTypeEnumObject = null;
             if (!Enum.TryParse(typeof(RelayContentType), contentType, true, out contentTypeEnumObject)) {
-                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage TryParse Exception uuid=" + uuid);
+                logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage TryParse Exception uuid=" + uuid + " slave=" + url);
                 return;
             }
 
