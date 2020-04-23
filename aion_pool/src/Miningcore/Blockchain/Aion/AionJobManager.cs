@@ -235,6 +235,9 @@ namespace Miningcore.Blockchain.Aion
 
                     var jobId = NextJobId("x8");
                     job = new AionJob(jobId, blockTemplate, logger, daemon, ctx, solver);
+
+                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob jobId '{jobId}' height '{(long)job.BlockTemplate.Height}'");
+                    
                     lock (jobLock)
                     {
                         // add jobs
