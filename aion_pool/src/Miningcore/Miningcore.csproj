@@ -77,6 +77,7 @@
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="System.Reactive" Version="4.1.2" />
+    <PackageReference Include="ZeroMQ" Version="4.1.0.31" />
   </ItemGroup>
 
   <ItemGroup>
@@ -86,9 +87,9 @@
     <Reference Include="WebSocketManager.Common">
       <HintPath>..\..\libs\WebSocketManager.Common.dll</HintPath>
     </Reference>
-    <Reference Include="ZeroMQ">
+    <!-- <Reference Include="ZeroMQ">
       <HintPath>..\..\libs\ZeroMQ.dll</HintPath>
-    </Reference>
+    </Reference> -->
   </ItemGroup>
 
   <ItemGroup>

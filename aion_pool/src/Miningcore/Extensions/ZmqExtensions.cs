@@ -78,74 +78,74 @@ namespace Miningcore.Extensions
         /// <summary>
         /// Sets up server-side socket to utilize ZeroMQ Curve Transport-Layer Security
         /// </summary>
-        public static void SetupCurveTlsServer(this ZSocket socket, string keyPlain, ILogger logger)
-        {
-            keyPlain = keyPlain?.Trim();
+        // public static void SetupCurveTlsServer(this ZSocket socket, string keyPlain, ILogger logger)
+        // {
+        //     keyPlain = keyPlain?.Trim();
 
-            if (string.IsNullOrEmpty(keyPlain))
-                return;
+        //     if (string.IsNullOrEmpty(keyPlain))
+        //         return;
 
-            if (!ZContext.Has("curve"))
-                logger.ThrowLogPoolStartupException("Unable to initialize ZMQ Curve Transport-Layer-Security. Your ZMQ library was compiled without Curve support!");
+        //     if (!ZContext.Has("curve"))
+        //         logger.ThrowLogPoolStartupException("Unable to initialize ZMQ Curve Transport-Layer-Security. Your ZMQ library was compiled without Curve support!");
 
-            // Get server's public key
-            byte[] keyBytes = null;
-            byte[] serverPubKey = null;
+        //     // Get server's public key
+        //     byte[] keyBytes = null;
+        //     byte[] serverPubKey = null;
 
-            if (!knownKeys.TryGetValue(keyPlain, out var serverKeys))
-            {
-                keyBytes = DeriveKey(keyPlain, 32);
+        //     if (!knownKeys.TryGetValue(keyPlain, out var serverKeys))
+        //     {
+        //         keyBytes = DeriveKey(keyPlain, 32);
 
-                // Derive server's public-key from shared secret
-                Z85.CurvePublic(out serverPubKey, keyBytes.ToZ85Encoded());
-                knownKeys[keyPlain] = (serverPubKey, keyBytes);
-            }
+        //         // Derive server's public-key from shared secret
+        //         Z85.CurvePublic(out serverPubKey, keyBytes.ToZ85Encoded());
+        //         knownKeys[keyPlain] = (serverPubKey, keyBytes);
+        //     }
 
-            else
-            {
-                keyBytes = serverKeys.SecretKey;
-                serverPubKey = serverKeys.PubKey;
-            }
+        //     else
+        //     {
+        //         keyBytes = serverKeys.SecretKey;
+        //         serverPubKey = serverKeys.PubKey;
+        //     }
 
-            // set socket options
-            socket.CurveServer = true;
-            socket.CurveSecretKey = keyBytes;
-            socket.CurvePublicKey = serverPubKey;
-        }
+        //     // set socket options
+        //     socket.CurveServer = true;
+        //     socket.CurveSecretKey = keyBytes;
+        //     socket.CurvePublicKey = serverPubKey;
+        // }
 
         /// <summary>
         /// Sets up client-side socket to utilize ZeroMQ Curve Transport-Layer Security
         /// </summary>
-        public static void SetupCurveTlsClient(this ZSocket socket, string keyPlain, ILogger logger)
-        {
-            keyPlain = keyPlain?.Trim();
+        // public static void SetupCurveTlsClient(this ZSocket socket, string keyPlain, ILogger logger)
+        // {
+        //     keyPlain = keyPlain?.Trim();
 
-            if (string.IsNullOrEmpty(keyPlain))
-                return;
+        //     if (string.IsNullOrEmpty(keyPlain))
+        //         return;
 
-            if (!ZContext.Has("curve"))
-                logger.ThrowLogPoolStartupException("Unable to initialize ZMQ Curve Transport-Layer-Security. Your ZMQ library was compiled without Curve support!");
+        //     if (!ZContext.Has("curve"))
+        //         logger.ThrowLogPoolStartupException("Unable to initialize ZMQ Curve Transport-Layer-Security. Your ZMQ library was compiled without Curve support!");
 
-            // Get server's public key
-            byte[] serverPubKey = null;
+        //     // Get server's public key
+        //     byte[] serverPubKey = null;
 
-            if (!knownKeys.TryGetValue(keyPlain, out var serverKeys))
-            {
-                var keyBytes = DeriveKey(keyPlain, 32);
+        //     if (!knownKeys.TryGetValue(keyPlain, out var serverKeys))
+        //     {
+        //         var keyBytes = DeriveKey(keyPlain, 32);
 
-                // Derive server's public-key from shared secret
-                Z85.CurvePublic(out serverPubKey, keyBytes.ToZ85Encoded());
-                knownKeys[keyPlain] = (serverPubKey, keyBytes);
-            }
+        //         // Derive server's public-key from shared secret
+        //         Z85.CurvePublic(out serverPubKey, keyBytes.ToZ85Encoded());
+        //         knownKeys[keyPlain] = (serverPubKey, keyBytes);
+        //     }
 
-            else
-                serverPubKey = serverKeys.PubKey;
+        //     else
+        //         serverPubKey = serverKeys.PubKey;
 
-            // set socket options
-            socket.CurveServer = false;
-            socket.CurveServerKey = serverPubKey;
-            socket.CurveSecretKey = ownKey.Value.SecretKey;
-            socket.CurvePublicKey = ownKey.Value.PubKey;
-        }
+        //     // set socket options
+        //     socket.CurveServer = false;
+        //     socket.CurveServerKey = serverPubKey;
+        //     socket.CurveSecretKey = ownKey.Value.SecretKey;
+        //     socket.CurvePublicKey = ownKey.Value.PubKey;
+        // }
     }
 }

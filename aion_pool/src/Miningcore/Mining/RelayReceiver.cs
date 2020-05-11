@@ -141,7 +141,7 @@ namespace Miningcore.Mining
         private static ZSocket SetupSubSocket(RelayEndpointConfig relay)
         {
             var subSocket = new ZSocket(ZSocketType.SUB);
-            subSocket.SetupCurveTlsClient(relay.SharedEncryptionKey, logger);
+            // subSocket.SetupCurveTlsClient(relay.SharedEncryptionKey, logger);
             subSocket.Connect(relay.Url);
             subSocket.SubscribeAll();
 

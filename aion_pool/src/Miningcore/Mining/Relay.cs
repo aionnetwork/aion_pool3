@@ -56,7 +56,7 @@ namespace Miningcore.Mining
 
             if (!clusterConfig.Relay.Connect)
             {
-                pubSocket.SetupCurveTlsServer(clusterConfig.Relay.SharedEncryptionKey, logger);
+                // pubSocket.SetupCurveTlsServer(clusterConfig.Relay.SharedEncryptionKey, logger);
 
                 pubSocket.Bind(clusterConfig.Relay.PublishUrl);
 
