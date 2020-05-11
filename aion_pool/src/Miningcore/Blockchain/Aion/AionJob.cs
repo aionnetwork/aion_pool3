@@ -9,8 +9,6 @@ using System.Numerics;
 using System.Collections.Concurrent;
 using Autofac;
 using Newtonsoft.Json.Linq;
-using Miningcore.Blockchain.Bitcoin;
-using Miningcore.Blockchain.Bitcoin.DaemonResponses;
 using Miningcore.Configuration;
 using Miningcore.Contracts;
 using Miningcore.Crypto;

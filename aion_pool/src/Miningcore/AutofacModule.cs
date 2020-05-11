@@ -23,13 +23,7 @@ using System.Reflection;
 using Autofac;
 using Miningcore.Api;
 using Miningcore.Banning;
-using Miningcore.Blockchain.Bitcoin;
 using Miningcore.Blockchain.Aion;
-using Miningcore.Blockchain.Bitcoin.DaemonResponses;
-using Miningcore.Blockchain.Ethereum;
-using Miningcore.Blockchain.Cryptonote;
-using Miningcore.Blockchain.Equihash;
-using Miningcore.Blockchain.Equihash.DaemonResponses;
 using Miningcore.Configuration;
 using Miningcore.Crypto;
 using Miningcore.Crypto.Hashing.Equihash;
@@ -93,9 +87,6 @@ namespace Miningcore
             builder.RegisterType<RelayReceiver>()
                 .SingleInstance();
 
-            builder.RegisterType<BtStreamReceiver>()
-                .SingleInstance();
-
             builder.RegisterType<Relay>()
                 .SingleInstance();
                 
@@ -144,30 +135,6 @@ namespace Miningcore
             builder.RegisterType<SoloPaymentScheme>()
                 .Keyed<IPayoutScheme>(PayoutScheme.Solo)
                 .SingleInstance();
-
-            //////////////////////
-            // Bitcoin and family
-
-            builder.RegisterType<BitcoinJobManager>()
-                .AsSelf();
-
-            //////////////////////
-            // Cryptonote
-
-            builder.RegisterType<CryptonoteJobManager>()
-                .AsSelf();
-
-            //////////////////////
-            // Ethereum
-
-            builder.RegisterType<EthereumJobManager>()
-                .AsSelf();
-
-            //////////////////////
-            // ZCash
-
-            builder.RegisterType<EquihashJobManager>()
-                .AsSelf();
 
             //////////////////////
             // Aion
