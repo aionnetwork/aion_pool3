@@ -26,6 +26,7 @@ using System.Linq;
 using System.Net;
 using System.Reactive.Disposables;
 using System.Text;
+using System.Threading;
 using Autofac;
 
 using Miningcore.Buffers;
@@ -44,6 +45,8 @@ namespace Miningcore.Stratum1
 {
     public class StratumClient
     {
+        public readonly CancellationTokenSource cts = new CancellationTokenSource();
+
         private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
 
         private const int MaxInboundRequestLength = 0x8000;
@@ -116,7 +119,7 @@ namespace Miningcore.Stratum1
             context = value;
         }
 
-        public T GetContextAs<T>() where T: WorkerContextBase
+        public T ContextAs<T>() where T: WorkerContextBase
         {
             return (T) context;
         }

@@ -41,7 +41,7 @@ using Miningcore.Mining;
 using Miningcore.Notifications;
 using Miningcore.Persistence;
 using Miningcore.Persistence.Repositories;
-using Miningcore.Stratum;
+using Miningcore.Stratum1;
 using Miningcore.Time;
 using Miningcore.Util;
 using Newtonsoft.Json;
@@ -95,7 +95,8 @@ namespace Miningcore.Blockchain.Aion
                 }
                 .ToArray();
 
-            await client.RespondAsync(data, request.Id);
+            // await client.RespondAsync(data, request.Id);
+            client.Respond(data, request.Id);
 
             // setup worker context
             context.IsSubscribed = true;
@@ -126,7 +127,8 @@ namespace Miningcore.Blockchain.Aion
             context.MinerName = minerName;
             context.WorkerName = workerName;
             // respond
-            await client.RespondAsync(context.IsAuthorized, request.Id);
+            // await client.RespondAsync(context.IsAuthorized, request.Id);
+            client.Respond(context.IsAuthorized, request.Id);
 
             // extract control vars from password
             var staticDiff = GetStaticDiffFromPassparts(passParts);
@@ -186,7 +188,8 @@ namespace Miningcore.Blockchain.Aion
                 {
                     var share = await manager.SubmitShareAsync(client, submitRequest, context.Difficulty, poolEndpoint.Difficulty);
                     // success
-                    await client.RespondAsync(true, request.Id);
+                    // await client.RespondAsync(true, request.Id);
+                    client.Respond(true, request.Id);
                     // publish
                     messageBus.SendMessage(new ClientShare(client, share));
                     // telemetry
@@ -220,7 +223,8 @@ namespace Miningcore.Blockchain.Aion
             }
             catch (StratumException ex)
             {
-                await client.RespondErrorAsync(ex.Code, ex.Message, request.Id, false);
+                // await client.RespondErrorAsync(ex.Code, ex.Message, request.Id, false);
+                client.RespondError(ex.Code, ex.Message, request.Id, false);
                 messageBus.SendMessage(new InvalidShare
                 {
                     PoolId = poolConfig.Id,
@@ -262,8 +266,10 @@ namespace Miningcore.Blockchain.Aion
             if (sendInitialWork)
             {
                 // send intial update
-                await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
-                await client.NotifyAsync(AionStratumMethods.SetTarget, arrayTarget);
+                // await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
+                // await client.NotifyAsync(AionStratumMethods.SetTarget, arrayTarget);
+                client.Notify(AionStratumMethods.MiningNotify, currentJobParams);
+                client.Notify(AionStratumMethods.SetTarget, arrayTarget);
             }
         }
 
@@ -293,14 +299,17 @@ namespace Miningcore.Blockchain.Aion
 
                     // varDiff: if the client has a pending difficulty change, apply it now
                     if (context.ApplyPendingDifficulty())
-                        await client.NotifyAsync(AionStratumMethods.SetDifficulty, new object[] { context.Difficulty });
+                        // await client.NotifyAsync(AionStratumMethods.SetDifficulty, new object[] { context.Difficulty });
+                        client.Notify(AionStratumMethods.SetDifficulty, new object[] { context.Difficulty });
 
                     string newTarget = AionUtils.diffToTarget(context.Difficulty);
                     ArrayList arrayTarget = new ArrayList();
                     arrayTarget.Add(newTarget);
 
-                    await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
-                    await client.NotifyAsync(AionStratumMethods.SetTarget, arrayTarget);
+                    // await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
+                    // await client.NotifyAsync(AionStratumMethods.SetTarget, arrayTarget);
+                    client.Notify(AionStratumMethods.MiningNotify, currentJobParams);
+                    client.Notify(AionStratumMethods.SetTarget, arrayTarget);
                 }
             });
 
@@ -422,13 +431,15 @@ namespace Miningcore.Blockchain.Aion
                     default:
                         logger.Debug(() => $"[{client.ConnectionId}] Unsupported RPC request: {JsonConvert.SerializeObject(request, serializerSettings)}");
 
-                        await client.RespondErrorAsync(StratumError.Other, $"Unsupported request {request.Method}", request.Id);
+                        //await client.RespondErrorAsync(StratumError.Other, $"Unsupported request {request.Method}", request.Id);
+                        client.RespondError(StratumError.Other, $"Unsupported request {request.Method}", request.Id);
                         break;
                 }
             }
             catch (StratumException ex)
             {
-                await client.RespondErrorAsync(ex.Code, ex.Message, request.Id, false);
+                // await client.RespondErrorAsync(ex.Code, ex.Message, request.Id, false);
+                client.RespondError(ex.Code, ex.Message, request.Id, false);
             }
         }
 
@@ -453,8 +464,10 @@ namespace Miningcore.Blockchain.Aion
                 targetArray.Add(newTarget);
 
                 // send job
-                await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
-                await client.NotifyAsync(AionStratumMethods.SetTarget, targetArray);
+                // await client.NotifyAsync(AionStratumMethods.MiningNotify, currentJobParams);
+                // await client.NotifyAsync(AionStratumMethods.SetTarget, targetArray);
+                client.Notify(AionStratumMethods.MiningNotify, currentJobParams);
+                client.Notify(AionStratumMethods.SetTarget, targetArray);
             }
         }
 

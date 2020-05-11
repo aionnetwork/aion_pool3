@@ -207,7 +207,7 @@ namespace Miningcore.Stratum1
                         if (request != null)
                         {
                             logger.Debug(() => $"[{LogCat}] [{client.ConnectionId}] Dispatching request '{request.Method}' [{request.Id}]");
-                            await OnRequestAsync(client, new Timestamped<JsonRpcRequest>(request, clock.Now));
+                            await OnRequestAsync(client, new Timestamped<JsonRpcRequest>(request, clock.Now), client.cts.Token);
                         }
 
                         else
@@ -307,6 +307,18 @@ namespace Miningcore.Stratum1
             }
         }
 
+        protected IEnumerable<Task> ForEachClient(Func<StratumClient, Task> func)
+        {
+            StratumClient[] tmp;
+
+            lock (clients)
+            {
+                tmp = clients.Values.ToArray();
+            }
+
+            return tmp.Select(x => func(x));
+        }
+
         protected abstract void OnConnect(StratumClient client);
 
         protected virtual void OnDisconnect(string subscriptionId)
@@ -314,6 +326,6 @@ namespace Miningcore.Stratum1
         }
 
         protected abstract Task OnRequestAsync(StratumClient client,
-            Timestamped<JsonRpcRequest> request);
+            Timestamped<JsonRpcRequest> request, CancellationToken ctx);
     }
 }

@@ -17,7 +17,7 @@ using Miningcore.DaemonInterface;
 using Miningcore.Extensions;
 using Miningcore.Messaging;
 using Miningcore.Notifications;
-using Miningcore.Stratum;
+using Miningcore.Stratum1;
 using Miningcore.Time;
 using NBitcoin;
 using NLog;

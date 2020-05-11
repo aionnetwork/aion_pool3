@@ -17,7 +17,7 @@ using Miningcore.Crypto;
 using Miningcore.Crypto.Hashing.Algorithms;
 using Miningcore.Crypto.Hashing.Equihash;
 using Miningcore.Extensions;
-using Miningcore.Stratum;
+using Miningcore.Stratum1;
 using Miningcore.Time;
 using Miningcore.Util;
 using Miningcore.DaemonInterface;
