@@ -115,6 +115,8 @@ namespace Miningcore.Mining
                     share.Source = clusterConfig.ClusterName;
                     share.BlockRewardDouble = (double) share.BlockReward;
 
+                    System.Threading.Thread.Sleep(1);
+
                     try
                     {
                         var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
