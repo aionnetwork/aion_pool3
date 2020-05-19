@@ -29,12 +29,15 @@ namespace Miningcore.Mining
 
         private readonly IMessageBus messageBus;
         private ClusterConfig clusterConfig;
-        private readonly BlockingCollection<Share> shareQueue = new BlockingCollection<Share>();
-        private readonly BlockingCollection<InvalidShare> invalidShareQueue = new BlockingCollection<InvalidShare>();
-        private readonly BlockingCollection<MinerInfo> minerInfoQueue = new BlockingCollection<MinerInfo>();
-        private IDisposable shareQueueSub;
-        private IDisposable invalidShareQueueSub;
-        private IDisposable minerInfoQueueSub;
+        // private readonly BlockingCollection<Share> shareQueue = new BlockingCollection<Share>();
+        // private readonly BlockingCollection<InvalidShare> invalidShareQueue = new BlockingCollection<InvalidShare>();
+        // private readonly BlockingCollection<MinerInfo> minerInfoQueue = new BlockingCollection<MinerInfo>();
+
+        private readonly BlockingCollection<RelayInterface> relayQueue = new BlockingCollection<RelayInterface>();
+        private IDisposable relayQueueSub;
+        // private IDisposable shareQueueSub;
+        // private IDisposable invalidShareQueueSub;
+        // private IDisposable minerInfoQueueSub;
         private readonly int QueueSizeWarningThreshold = 1024;
         private bool hasWarnedAboutBacklogSize;
         private ZSocket pubSocket;
@@ -48,9 +51,11 @@ namespace Miningcore.Mining
         {
             this.clusterConfig = clusterConfig;
 
-            messageBus.Listen<ClientShare>().Subscribe(x => shareQueue.Add(x.Share));
-            messageBus.Listen<InvalidShare>().Subscribe(x => invalidShareQueue.Add(x));
-            messageBus.Listen<MinerInfo>().Subscribe(x => minerInfoQueue.Add(x));
+            // messageBus.Listen<ClientShare>().Subscribe(x => shareQueue.Add(x.Share));
+            // messageBus.Listen<InvalidShare>().Subscribe(x => invalidShareQueue.Add(x));
+            // messageBus.Listen<MinerInfo>().Subscribe(x => minerInfoQueue.Add(x));
+
+            messageBus.Listen<RelayInterface>().Subscribe(x => relayQueue.Add(x));
 
             pubSocket = new ZSocket(ZSocketType.PUB);
 
@@ -86,12 +91,14 @@ namespace Miningcore.Mining
 
             pubSocket.Dispose();
 
-            shareQueueSub?.Dispose();
-            shareQueueSub = null;
-            invalidShareQueueSub?.Dispose();
-            invalidShareQueueSub = null;
-            minerInfoQueueSub?.Dispose();
-            minerInfoQueueSub = null;
+            // shareQueueSub?.Dispose();
+            // shareQueueSub = null;
+            // invalidShareQueueSub?.Dispose();
+            // invalidShareQueueSub = null;
+            // minerInfoQueueSub?.Dispose();
+            // minerInfoQueueSub = null;
+            relayQueueSub?.Dispose();
+            relayQueueSub = null;
 
             logger.Info(() => "Stopped");
         }
@@ -100,138 +107,226 @@ namespace Miningcore.Mining
 
         private void InitializeQueues()
         {
-            InitializeShareQueue();
-            InitializeInvalidShareQueue();
-            InitializeMinerInfoQueue();
+            // InitializeShareQueue();
+            // InitializeInvalidShareQueue();
+            // InitializeMinerInfoQueue();
+            InitializeRelayQueue();
         }
 
-        private void InitializeShareQueue() 
+        private void InitializeRelayQueue() 
         {
-            shareQueueSub = shareQueue.GetConsumingEnumerable()
+            relayQueueSub = relayQueue.GetConsumingEnumerable()
                 .ToObservable(TaskPoolScheduler.Default)
                 .Do(_ => CheckQueueBacklog())
-                .Subscribe(share =>
+                .Subscribe(msg =>
                 {
-                    share.Source = clusterConfig.ClusterName;
-                    share.BlockRewardDouble = (double) share.BlockReward;
-
                     System.Threading.Thread.Sleep(1);
-
-                    try
-                    {
-                        var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
-
-                        using (var msg = new ZMessage())
-                        {
-                            // Topic frame
-                            msg.Add(new ZFrame(share.PoolId));
-
-                            // Frame 2: flags
-                            msg.Add(new ZFrame(flags));
-
-                            // Frame 3: content type
-                            msg.Add(new ZFrame(RelayContentType.Share.ToString()));
-
-                            // Frame 4: payload
-                            using(var stream = new MemoryStream())
-                            {
-                                Serializer.Serialize(stream, share);
-                                msg.Add(new ZFrame(stream.ToArray()));
-                            }
-
-                            pubSocket.SendMessage(msg);
-                        }
-                    }
-
-                    catch(Exception ex)
-                    {
-                        logger.Error(ex);
+                    if (msg is Share) {
+                      RelayShare((Share) msg);
+                    } else if (msg is InvalidShare) {
+                      RelayInvalidShare((InvalidShare) msg);
+                    } else if (msg is MinerInfo) {
+                      RelayMinerInfo((MinerInfo) msg);
+                    } else {
+                      logger.Warn(() => $"unknown message to relay...");
                     }
                 });
         }
 
-        private void InitializeInvalidShareQueue()
-        {
-            invalidShareQueueSub = invalidShareQueue.GetConsumingEnumerable()
-                .ToObservable(TaskPoolScheduler.Default)
-                .Do(_ => CheckQueueBacklog())
-                .Subscribe(invalidShare =>
+        private void RelayShare(Share share) {
+            share.Source = clusterConfig.ClusterName;
+            share.BlockRewardDouble = (double) share.BlockReward;
+
+            try
+            {
+                var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
+
+                using (var msg = new ZMessage())
                 {
-                    try
+                    // Topic frame
+                    msg.Add(new ZFrame(share.PoolId));
+
+                    // Frame 2: flags
+                    msg.Add(new ZFrame(flags));
+
+                    // Frame 3: content type
+                    msg.Add(new ZFrame(RelayContentType.Share.ToString()));
+
+                    // Frame 4: payload
+                    using(var stream = new MemoryStream())
                     {
-                        var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
-
-                        using (var msg = new ZMessage())
-                        {
-                            // Topic frame
-                            msg.Add(new ZFrame(invalidShare.PoolId));
-
-                            // Frame 2: flags
-                            msg.Add(new ZFrame(flags));
-
-                            // Frame 3: content type
-                            msg.Add(new ZFrame(RelayContentType.InvalidShare.ToString()));
-
-                            // Frame 4: payload
-                            using(var stream = new MemoryStream())
-                            {
-                                Serializer.Serialize(stream, invalidShare);
-                                msg.Add(new ZFrame(stream.ToArray()));
-                            }
-
-                            pubSocket.SendMessage(msg);
-                        }
+                        Serializer.Serialize(stream, share);
+                        msg.Add(new ZFrame(stream.ToArray()));
                     }
 
-                    catch(Exception ex)
-                    {
-                        logger.Error(ex);
-                    }
-                });
+                    pubSocket.SendMessage(msg);
+                }
+            }
+
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
 
-        private void InitializeMinerInfoQueue()
-        {
-            minerInfoQueueSub = minerInfoQueue.GetConsumingEnumerable()
-                .ToObservable(TaskPoolScheduler.Default)
-                .Do(_ => CheckQueueBacklog())
-                .Subscribe(minerInfo =>
+        private void RelayInvalidShare(InvalidShare invalidShare) {
+            try
+            {
+                var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
+
+                using (var msg = new ZMessage())
                 {
-                    try
+                    // Topic frame
+                    msg.Add(new ZFrame(invalidShare.PoolId));
+
+                    // Frame 2: flags
+                    msg.Add(new ZFrame(flags));
+
+                    // Frame 3: content type
+                    msg.Add(new ZFrame(RelayContentType.InvalidShare.ToString()));
+
+                    // Frame 4: payload
+                    using(var stream = new MemoryStream())
                     {
-                        var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
-
-                        using (var msg = new ZMessage())
-                        {
-                            // Topic frame
-                            msg.Add(new ZFrame(minerInfo.PoolId));
-
-                            // Frame 2: flags
-                            msg.Add(new ZFrame(flags));
-
-                            // Frame 3: content type
-                            msg.Add(new ZFrame(RelayContentType.MinerInfo.ToString()));
-
-                            // Frame 4: payload
-                            using(var stream = new MemoryStream())
-                            {
-                                Serializer.Serialize(stream, minerInfo);
-                                msg.Add(new ZFrame(stream.ToArray()));
-                            }
-
-                            pubSocket.SendMessage(msg);
-                        }
+                        Serializer.Serialize(stream, invalidShare);
+                        msg.Add(new ZFrame(stream.ToArray()));
                     }
 
-                    catch(Exception ex)
-                    {
-                        logger.Error(ex);
-                    }
-                });
+                    pubSocket.SendMessage(msg);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
+
+        private void RelayMinerInfo(MinerInfo minerInfo) {
+            try
+            {
+                var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
+
+                using (var msg = new ZMessage())
+                {
+                    // Topic frame
+                    msg.Add(new ZFrame(minerInfo.PoolId));
+
+                    // Frame 2: flags
+                    msg.Add(new ZFrame(flags));
+
+                    // Frame 3: content type
+                    msg.Add(new ZFrame(RelayContentType.MinerInfo.ToString()));
+
+                    // Frame 4: payload
+                    using(var stream = new MemoryStream())
+                    {
+                        Serializer.Serialize(stream, minerInfo);
+                        msg.Add(new ZFrame(stream.ToArray()));
+                    }
+
+                    pubSocket.SendMessage(msg);
+                }
+            }
+
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        // private void InitializeShareQueue() 
+        // {
+        //     shareQueueSub = shareQueue.GetConsumingEnumerable()
+        //         .ToObservable(TaskPoolScheduler.Default)
+        //         .Do(_ => CheckQueueBacklog())
+        //         .Subscribe(share =>
+        //         {
+        //           RelayShare(share);
+        //         });
+        // }
+
+        // private void InitializeInvalidShareQueue()
+        // {
+        //     invalidShareQueueSub = invalidShareQueue.GetConsumingEnumerable()
+        //         .ToObservable(TaskPoolScheduler.Default)
+        //         .Do(_ => CheckQueueBacklog())
+        //         .Subscribe(invalidShare =>
+        //         {
+        //             try
+        //             {
+        //                 var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
+
+        //                 using (var msg = new ZMessage())
+        //                 {
+        //                     // Topic frame
+        //                     msg.Add(new ZFrame(invalidShare.PoolId));
+
+        //                     // Frame 2: flags
+        //                     msg.Add(new ZFrame(flags));
+
+        //                     // Frame 3: content type
+        //                     msg.Add(new ZFrame(RelayContentType.InvalidShare.ToString()));
+
+        //                     // Frame 4: payload
+        //                     using(var stream = new MemoryStream())
+        //                     {
+        //                         Serializer.Serialize(stream, invalidShare);
+        //                         msg.Add(new ZFrame(stream.ToArray()));
+        //                     }
+
+        //                     pubSocket.SendMessage(msg);
+        //                 }
+        //             }
+
+        //             catch(Exception ex)
+        //             {
+        //                 logger.Error(ex);
+        //             }
+        //         });
+        // }
+
+        // private void InitializeMinerInfoQueue()
+        // {
+        //     minerInfoQueueSub = minerInfoQueue.GetConsumingEnumerable()
+        //         .ToObservable(TaskPoolScheduler.Default)
+        //         .Do(_ => CheckQueueBacklog())
+        //         .Subscribe(minerInfo =>
+        //         {
+        //             try
+        //             {
+        //                 var flags = (int) RelayInfo.WireFormat.ProtocolBuffers;
+
+        //                 using (var msg = new ZMessage())
+        //                 {
+        //                     // Topic frame
+        //                     msg.Add(new ZFrame(minerInfo.PoolId));
+
+        //                     // Frame 2: flags
+        //                     msg.Add(new ZFrame(flags));
+
+        //                     // Frame 3: content type
+        //                     msg.Add(new ZFrame(RelayContentType.MinerInfo.ToString()));
+
+        //                     // Frame 4: payload
+        //                     using(var stream = new MemoryStream())
+        //                     {
+        //                         Serializer.Serialize(stream, minerInfo);
+        //                         msg.Add(new ZFrame(stream.ToArray()));
+        //                     }
+
+        //                     pubSocket.SendMessage(msg);
+        //                 }
+        //             }
+
+        //             catch(Exception ex)
+        //             {
+        //                 logger.Error(ex);
+        //             }
+        //         });
+        // }
         private void CheckQueueBacklog()
         {
-            if (shareQueue.Count > QueueSizeWarningThreshold)
+            if (relayQueue.Count > QueueSizeWarningThreshold)
             {
                 if (!hasWarnedAboutBacklogSize)
                 {
@@ -240,7 +335,7 @@ namespace Miningcore.Mining
                 }
             }
 
-            else if (hasWarnedAboutBacklogSize && shareQueue.Count <= QueueSizeWarningThreshold / 2)
+            else if (hasWarnedAboutBacklogSize && relayQueue.Count <= QueueSizeWarningThreshold / 2)
             {
                 hasWarnedAboutBacklogSize = false;
             }

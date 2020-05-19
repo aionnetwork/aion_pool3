@@ -4,7 +4,7 @@ using ProtoBuf;
 namespace Miningcore.Blockchain
 {
     [ProtoContract]
-    public class MinerInfo
+    public class MinerInfo: RelayInterface
     {
         public MinerInfo(string PoolId, string Miner, decimal MinimumPayment) 
         {
