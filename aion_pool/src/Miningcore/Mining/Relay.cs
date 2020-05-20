@@ -120,7 +120,7 @@ namespace Miningcore.Mining
                 .Do(_ => CheckQueueBacklog())
                 .Subscribe(msg =>
                 {
-                    System.Threading.Thread.Sleep(1);
+                    // System.Threading.Thread.Sleep(1);
                     if (msg is Share) {
                       RelayShare((Share) msg);
                     } else if (msg is InvalidShare) {
