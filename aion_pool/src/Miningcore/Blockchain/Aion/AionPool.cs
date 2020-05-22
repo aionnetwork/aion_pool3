@@ -69,7 +69,7 @@ namespace Miningcore.Blockchain.Aion
         private AionJobManager manager;
         protected static readonly Regex regexMinimumPayment = new Regex(@";?mp=(\d*(\.\d+)?)", RegexOptions.Compiled);
 
-        private async Task OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
+        private void OnSubscribeAsync(StratumClient client, Timestamped<JsonRpcRequest> tsRequest)
         {
             var request = tsRequest.Value;
             var context = client.ContextAs<AionWorkerContext>();
@@ -143,7 +143,7 @@ namespace Miningcore.Blockchain.Aion
             messageBus.SendMessage(new MinerInfo(poolConfig.Id, 
                 context.MinerName, context.MinimumPayment = minimumPayment));
 
-            await EnsureInitialWorkSent(client);
+            EnsureInitialWorkSent(client);
 
             // log association
             logger.Info(() => $"[{client.ConnectionId}] Authorized worker {workerValue} mp {minimumPayment}");
@@ -196,7 +196,7 @@ namespace Miningcore.Blockchain.Aion
                     PublishTelemetry(TelemetryCategory.Share, clock.Now - tsRequest.Timestamp.UtcDateTime, true);
 
                     logger.Debug(() => $"[{client.ConnectionId}] Share accepted: D={Math.Round(share.Difficulty, 3)}");
-                    await EnsureInitialWorkSent(client);
+                    EnsureInitialWorkSent(client);
 
                     // update pool stats
                     if (share.IsBlockCandidate)
@@ -246,7 +246,7 @@ namespace Miningcore.Blockchain.Aion
             }
         }
 
-        private async Task EnsureInitialWorkSent(StratumClient client)
+        private void EnsureInitialWorkSent(StratumClient client)
         {
             var context = client.ContextAs<AionWorkerContext>();
             ArrayList arrayTarget = new ArrayList();
@@ -273,14 +273,14 @@ namespace Miningcore.Blockchain.Aion
             }
         }
 
-        protected virtual Task OnNewJobAsync(object jobParams)
+        protected void OnNewJobAsync(object jobParams)
         {
             currentJobParams = jobParams;
 
             logger.Debug(() => $"Broadcasting job");
 
             logger.Info(() => "!!! src/Miningcore/Blockchain/Aion/AionPool.cs/OnNewJobAsync");
-            var tasks = ForEachClient(async client =>
+            ForEachClient(client =>
             {
                 var context = client.ContextAs<AionWorkerContext>();
 
@@ -313,7 +313,6 @@ namespace Miningcore.Blockchain.Aion
                 }
             });
 
-            return Task.WhenAll(tasks);
         }
 
         #region Overrides
@@ -342,15 +341,17 @@ namespace Miningcore.Blockchain.Aion
                 disposables.Add(manager.Jobs
                     .Select(job => Observable.FromAsync(async () =>
                     {
+                      await Task.Run(() => {
                         try
                         {
-                            await OnNewJobAsync(job);
+                            OnNewJobAsync(job);
                         }
 
                         catch (Exception ex)
                         {
                             logger.Debug(() => $"{nameof(OnNewJobAsync)}: {ex.Message}");
                         }
+                      });
                     }))
                     .Concat()
                     .Subscribe(_ => { }, ex =>
@@ -418,7 +419,7 @@ namespace Miningcore.Blockchain.Aion
                 switch (request.Method)
                 {
                     case AionStratumMethods.Subscribe:
-                        await OnSubscribeAsync(client, tsRequest);
+                        OnSubscribeAsync(client, tsRequest);
                         break;
 
                     case AionStratumMethods.Authorize:

@@ -51,11 +51,9 @@ namespace Miningcore.Mining
         {
             this.clusterConfig = clusterConfig;
 
-            // messageBus.Listen<ClientShare>().Subscribe(x => shareQueue.Add(x.Share));
-            // messageBus.Listen<InvalidShare>().Subscribe(x => invalidShareQueue.Add(x));
-            // messageBus.Listen<MinerInfo>().Subscribe(x => minerInfoQueue.Add(x));
-
-            messageBus.Listen<RelayInterface>().Subscribe(x => relayQueue.Add(x));
+            messageBus.Listen<ClientShare>().Subscribe(x => relayQueue.Add(x.Share));
+            messageBus.Listen<InvalidShare>().Subscribe(x => relayQueue.Add(x));
+            messageBus.Listen<MinerInfo>().Subscribe(x => relayQueue.Add(x));
 
             pubSocket = new ZSocket(ZSocketType.PUB);
 

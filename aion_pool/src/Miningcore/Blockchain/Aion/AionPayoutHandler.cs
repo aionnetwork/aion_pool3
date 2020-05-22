@@ -87,7 +87,7 @@ namespace Miningcore.Blockchain.Aion
 
         #region IPayoutHandler
 
-        public async Task ConfigureAsync(ClusterConfig clusterConfig, PoolConfig poolConfig)
+        public void ConfigureAsync(ClusterConfig clusterConfig, PoolConfig poolConfig)
         {
             this.poolConfig = poolConfig;
             this.clusterConfig = clusterConfig;
