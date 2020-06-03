@@ -205,7 +205,7 @@ namespace Miningcore.Blockchain.Aion
                     context.Stats.ValidShares++;
                     await UpdateVarDiffAsync(client);
                 }
-                catch (Miningcore.Stratum.StratumException ex)
+                catch (StratumException ex)
                 {
                     // telemetry
                     PublishTelemetry(TelemetryCategory.Share, clock.Now - tsRequest.Timestamp.UtcDateTime, false);
