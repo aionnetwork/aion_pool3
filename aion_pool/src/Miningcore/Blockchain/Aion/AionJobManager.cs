@@ -102,7 +102,7 @@ namespace Miningcore.Blockchain.Aion
             lock(jobLock)
             {
                 if (!validJobs.TryGetValue(jobId, out job)){
-                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob jobId '{jobId}' height '{(long)job.BlockTemplate.Height}'");
+                    // logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/SubmitShareAsync stale-share jobId '{jobId}'");
                     throw new StratumException(StratumError.MinusOne, "stale share");
                 }
             }
