@@ -24,7 +24,7 @@ using ProtoBuf;
 namespace Miningcore.Blockchain
 {
     [ProtoContract]
-    public class Share
+    public class Share: RelayInterface
     {
         /// <summary>
         /// The pool originating this share from

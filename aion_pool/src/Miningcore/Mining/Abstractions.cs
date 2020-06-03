@@ -23,7 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Miningcore.Blockchain;
 using Miningcore.Configuration;
-using Miningcore.Stratum;
+using Miningcore.Stratum1;
 
 namespace Miningcore.Mining
 {

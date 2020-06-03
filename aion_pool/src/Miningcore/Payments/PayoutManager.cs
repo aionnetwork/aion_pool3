@@ -91,7 +91,7 @@ namespace Miningcore.Payments
                         .First(x => x.Value.Metadata.SupportedFamilies.Contains(family)).Value;
 
                     var handler = handlerImpl.Value;
-                    await handler.ConfigureAsync(clusterConfig, pool);
+                    handler.ConfigureAsync(clusterConfig, pool);
 
                     // resolve payout scheme
                     var scheme = ctx.ResolveKeyed<IPayoutScheme>(pool.PaymentProcessing.PayoutScheme);

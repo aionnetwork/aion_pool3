@@ -423,7 +423,8 @@ namespace Miningcore.Persistence.Postgres.Repositories
                         "		ms.hashrate,  " +
                         "		ms.sharespersecond,  " +
                         "		ROW_NUMBER() OVER(PARTITION BY ms.miner ORDER BY ms.hashrate DESC) AS rk  " +
-                        "	FROM (SELECT miner, AVG(hashrate) AS hashrate, AVG(sharespersecond) AS sharespersecond " +
+                        //"	FROM (SELECT miner, AVG(hashrate) AS hashrate, AVG(sharespersecond) AS sharespersecond " +
+                        "	FROM (SELECT miner, SUM(hashrate) AS hashrate, SUM(sharespersecond) AS sharespersecond " +
                         "       FROM minerstats " +
                         "       WHERE poolid = @poolid AND created >= @from GROUP BY miner, created) ms " +
                         ") " +

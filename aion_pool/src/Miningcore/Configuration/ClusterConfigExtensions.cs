@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Numerics;
 using Autofac;
-using Miningcore.Blockchain.Bitcoin;
 using Miningcore.Crypto;
 using Miningcore.Crypto.Hashing.Algorithms;
 using NBitcoin;

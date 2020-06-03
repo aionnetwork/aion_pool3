@@ -185,11 +185,18 @@ namespace Miningcore.Mining
 
         private void ProcessMessage(string url, ZMessage msg)
         {
+            
             // extract frames
             var topic = msg[0].ToString(Encoding.UTF8);
             var flags = msg[1].ReadUInt32();
             var contentType = msg[2].ToString(Encoding.UTF8);
             var data = msg.Count > 3 ? msg[3].Read() : new byte[0];
+
+            // String uuid = System.Guid.NewGuid().ToString();
+            // foreach (var item in msg)
+            // {
+            //     logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage " + uuid + " " + item.ToString(Encoding.UTF8) + " slave=" + url);
+            // }
 
             // validate
             if (string.IsNullOrEmpty(topic) || !pools.ContainsKey(topic))
@@ -211,7 +218,15 @@ namespace Miningcore.Mining
             // deserialize
             var wireFormat = (RelayInfo.WireFormat)(flags & RelayInfo.WireFormatMask);
             Object obj = null;
-            RelayContentType contentTypeEnum = (RelayContentType) Enum.Parse(typeof(RelayContentType), contentType);
+
+            Object contentTypeEnumObject = null;
+            if (!Enum.TryParse(typeof(RelayContentType), contentType, true, out contentTypeEnumObject)) {
+                // logger.Info(() => "!!! src/Miningcore/Mining/RelayReceiver.cs/ProcessMessage TryParse Exception uuid=" + uuid + " slave=" + url);
+                return;
+            }
+
+            RelayContentType contentTypeEnum = (RelayContentType) contentTypeEnumObject;
+            
             switch (wireFormat)
             {
                 case RelayInfo.WireFormat.Json:

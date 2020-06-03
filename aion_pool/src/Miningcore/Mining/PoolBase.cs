@@ -39,7 +39,8 @@ using Miningcore.Messaging;
 using Miningcore.Notifications.Messages;
 using Miningcore.Persistence;
 using Miningcore.Persistence.Repositories;
-using Miningcore.Stratum;
+// using Miningcore.Stratum;
+using Miningcore.Stratum1;
 using Miningcore.Time;
 using Miningcore.Util;
 using Miningcore.VarDiff;
@@ -115,19 +116,43 @@ namespace Miningcore.Mining
             return null;
         }
 
-        protected override void OnConnect(StratumClient client, IPEndPoint ipEndPoint)
+        protected override string LogCat => "Pool";
+
+        // protected override void OnConnect(StratumClient client, IPEndPoint ipEndPoint)
+        // {
+        //     // client setup
+        //     var context = CreateClientContext();
+
+        //     var poolEndpoint = poolConfig.Ports[ipEndPoint.Port];
+        //     context.Init(poolConfig, poolEndpoint.Difficulty, poolConfig.EnableInternalStratum == true ? poolEndpoint.VarDiff : null, clock);
+        //     client.SetContext(context);
+
+        //     // varDiff setup
+        //     if (context.VarDiff != null)
+        //     {
+        //         lock(context.VarDiff)
+        //         {
+        //             StartVarDiffIdleUpdate(client, poolEndpoint);
+        //         }
+        //     }
+
+        //     // expect miner to establish communication within a certain time
+        //     EnsureNoZombieClient(client);
+        // }
+
+        protected override void OnConnect(StratumClient client)
         {
             // client setup
             var context = CreateClientContext();
 
-            var poolEndpoint = poolConfig.Ports[ipEndPoint.Port];
+            var poolEndpoint = poolConfig.Ports[client.PoolEndpoint.Port];
             context.Init(poolConfig, poolEndpoint.Difficulty, poolConfig.EnableInternalStratum == true ? poolEndpoint.VarDiff : null, clock);
             client.SetContext(context);
 
             // varDiff setup
             if (context.VarDiff != null)
             {
-                lock(context.VarDiff)
+                lock (context.VarDiff)
                 {
                     StartVarDiffIdleUpdate(client, poolEndpoint);
                 }
@@ -140,7 +165,9 @@ namespace Miningcore.Mining
         private void EnsureNoZombieClient(StratumClient client)
         {
             Observable.Timer(clock.Now.AddSeconds(10))
-                .TakeUntil(client.Terminated)
+
+                // .TakeUntil(client.Terminated)
+                .Take(1)
                 .Where(_=> client.IsAlive)
                 .Subscribe(_ =>
                 {
@@ -173,6 +200,7 @@ namespace Miningcore.Mining
 
         protected async Task UpdateVarDiffAsync(StratumClient client, bool isIdleUpdate = false)
         {
+            // var context = client.ContextAs<WorkerContextBase>();
             var context = client.ContextAs<WorkerContextBase>();
 
             if (context.VarDiff != null)
@@ -221,18 +249,33 @@ namespace Miningcore.Mining
             // Diff may not be changed, only be changed when avg is out of the range.
             // Diff must be dropped once changed. Will not affect reject rate.
 
+            // var shareReceived = messageBus.Listen<ClientShare>()
+            //     .Where(x => x.Share.PoolId == poolConfig.Id && x.Client == client)
+            //     .Select(_=> Unit.Default)
+            //     .Take(1);
+
+            // var timeout = poolEndpoint.VarDiff.TargetTime;
+
+            // Observable.Timer(TimeSpan.FromSeconds(timeout))
+            //     .TakeUntil(Observable.Merge(shareReceived, client.Terminated))
+            //     .Where(_ => client.IsAlive)
+            //     .Select(x => Observable.FromAsync(() => UpdateVarDiffAsync(client, true)))
+            //     .Concat()
+            //     .Subscribe(_ => { }, ex =>
+            //     {
+            //         logger.Debug(ex, nameof(StartVarDiffIdleUpdate));
+            //     });
+
+            var interval = poolEndpoint.VarDiff.TargetTime;
             var shareReceived = messageBus.Listen<ClientShare>()
                 .Where(x => x.Share.PoolId == poolConfig.Id && x.Client == client)
-                .Select(_=> Unit.Default)
-                .Take(1);
+                .Select(_=> Unit.Default);
 
-            var timeout = poolEndpoint.VarDiff.TargetTime;
-
-            Observable.Timer(TimeSpan.FromSeconds(timeout))
-                .TakeUntil(Observable.Merge(shareReceived, client.Terminated))
+            Observable.Timer(TimeSpan.FromSeconds(interval))
+                .TakeUntil(shareReceived)
+                .Take(1)
                 .Where(_ => client.IsAlive)
                 .Select(x => Observable.FromAsync(() => UpdateVarDiffAsync(client, true)))
-                .Concat()
                 .Subscribe(_ => { }, ex =>
                 {
                     logger.Debug(ex, nameof(StartVarDiffIdleUpdate));
@@ -241,6 +284,7 @@ namespace Miningcore.Mining
 
         protected virtual Task OnVarDiffUpdateAsync(StratumClient client, double newDiff)
         {
+            // var context = client.ContextAs<WorkerContextBase>();
             var context = client.ContextAs<WorkerContextBase>();
             context.EnqueueNewDifficulty(newDiff);
 
@@ -316,13 +360,22 @@ namespace Miningcore.Mining
             }
         }
 
-        private (IPEndPoint IPEndPoint, PoolEndpoint PoolEndpoint) PoolEndpoint2IPEndpoint(int port, PoolEndpoint pep)
+        // private (IPEndPoint IPEndPoint, PoolEndpoint PoolEndpoint) PoolEndpoint2IPEndpoint(int port, PoolEndpoint pep)
+        // {
+        //     var listenAddress = IPAddress.Parse("127.0.0.1");
+        //     if (!string.IsNullOrEmpty(pep.ListenAddress))
+        //         listenAddress = pep.ListenAddress != "*" ? IPAddress.Parse(pep.ListenAddress) : IPAddress.Any;
+
+        //     return (new IPEndPoint(listenAddress, port), pep);
+        // }
+
+        private (IPEndPoint IPEndPoint, TcpProxyProtocolConfig ProxyProtocol) PoolEndpoint2IPEndpoint(int port, PoolEndpoint pep)
         {
             var listenAddress = IPAddress.Parse("127.0.0.1");
             if (!string.IsNullOrEmpty(pep.ListenAddress))
                 listenAddress = pep.ListenAddress != "*" ? IPAddress.Parse(pep.ListenAddress) : IPAddress.Any;
 
-            return (new IPEndPoint(listenAddress, port), pep);
+            return (new IPEndPoint(listenAddress, port), pep.TcpProxyProtocol);
         }
 
         private void OutputPoolInfo()
@@ -380,7 +433,8 @@ Pool Fee:               {(poolConfig.RewardRecipients?.Any() == true ? poolConfi
                         .Select(port => PoolEndpoint2IPEndpoint(port, poolConfig.Ports[port]))
                         .ToArray();
 
-                    StartListeners(ipEndpoints);
+                    // StartListeners(ipEndpoints);
+                    StartListeners(poolConfig.Id, ipEndpoints);
                 }
 
                 logger.Info(() => $"Pool Online");

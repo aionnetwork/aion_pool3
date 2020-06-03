@@ -4,7 +4,7 @@ using ProtoBuf;
 namespace Miningcore.Blockchain
 {
     [ProtoContract]
-    public class InvalidShare
+    public class InvalidShare: RelayInterface
     {
         /// <summary>
         /// The pool originating this share from

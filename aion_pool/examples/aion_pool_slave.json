@@ -63,18 +63,18 @@
         "checkThreshold": 50
       },
       "ports": {
-	  "3334": {
+        "3334": {
 	        "listenAddress": "0.0.0.0",
-		"difficulty": 128,
-                "varDiff": {
-                    "minDiff": 128,
-                    "maxDiff": 2048,
-                    "targetTime": 5,
-                    "retargetTime": 5,
-                    "variancePercent": 30,
-                    "maxDelta": 500
-                }
-            }
+          "difficulty": 128,
+          "varDiff": {
+              "minDiff": 128,
+              "maxDiff": 2048,
+              "targetTime": 5,
+              "retargetTime": 5,
+              "variancePercent": 30,
+              "maxDelta": 500
+          }
+        }
       },
       "daemons": [{
           "host": "127.0.0.1",
