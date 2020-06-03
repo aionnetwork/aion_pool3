@@ -102,7 +102,7 @@ namespace Miningcore.Blockchain.Aion
             lock(jobLock)
             {
                 if (!validJobs.TryGetValue(jobId, out job)){
-                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/SubmitShareAsync stale-share jobId '{jobId}'");
+                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob jobId '{jobId}' height '{(long)job.BlockTemplate.Height}'");
                     throw new StratumException(StratumError.MinusOne, "stale share");
                 }
             }
@@ -236,7 +236,7 @@ namespace Miningcore.Blockchain.Aion
                     var jobId = NextJobId("x8");
                     job = new AionJob(jobId, blockTemplate, logger, daemon, ctx, solver);
 
-                    logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob jobId '{jobId}' height '{(long)job.BlockTemplate.Height}'");
+                    // logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob jobId '{jobId}' height '{(long)job.BlockTemplate.Height}'");
                     
                     lock (jobLock)
                     {
@@ -248,7 +248,7 @@ namespace Miningcore.Blockchain.Aion
                             .Where(key => (long) validJobs[key].BlockTemplate.Height < (long) (job.BlockTemplate.Height - MaxBlockBacklog)).ToArray();
 
                         foreach (var key in obsoleteKeys){
-                            logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob job-remove key '{key}' height '{(long) validJobs[key].BlockTemplate.Height}' current-height '{(long)job.BlockTemplate.Height}'");
+                            // logger.Info(() => $"!!! src/Mingingcore/Blockchain/Aion/AionJobManager.cs/UpdateJob job-remove key '{key}' height '{(long) validJobs[key].BlockTemplate.Height}' current-height '{(long)job.BlockTemplate.Height}'");
                             validJobs.Remove(key);
                         }
                     }
