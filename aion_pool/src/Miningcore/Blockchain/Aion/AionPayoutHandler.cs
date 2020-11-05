@@ -159,28 +159,13 @@ namespace Miningcore.Blockchain.Aion
                             if ((long)block.BlockHeight < poolConfig.SignatureSwapProtocolUpgradeBlock) {
                                 block.Reward = rewardsCalculator.calculateReward((long) block.BlockHeight);
                             } else {
-
                                 long[] blockCacheHeights = new long[] {(long) block.BlockHeight, (long) block.BlockHeight - 1};
-
-                                var cacheMisses = blockCacheHeights.Where(x => !blockCache.ContainsKey(x)).ToArray();
-                                if (cacheMisses.Any()) {
-                                    var blockBatch = cacheMisses.Select(height => new DaemonCmd(AionCommands.GetBlockByNumber,
-                                        new[]
-                                        {
-                                            (object) height.ToStringHexWithPrefix(),
-                                            true
-                                        })).ToArray();
-
-                                    var tmp = await daemon.ExecuteBatchAnyAsync(logger, blockBatch);
-
-                                    var transformed = tmp
-                                        .Where(x => x.Error == null && x.Response != null)
-                                        .Select(x => x.Response?.ToObject<DaemonResponses.Block>())
-                                        .Where(x => x != null)
-                                        .ToArray();
-
-                                    foreach (var b in transformed)
-                                        blockCache[(long)b.Height.Value] = b;
+                                var cache = await FetchBlocks(blockCache, blockCacheHeights);
+                                // Still missing the block info
+                                if (cache.Length != 2) {
+                                    result.Remove(block);
+                                    logger.Warn(() => $"[{LogCategory}] missing the block details at block {block.BlockHeight}, skip the rewards calculation for this block");
+                                    continue;
                                 }
                                            
                                 block.Reward = rewardsCalculator.calculateRewardWithTimeSpan((long)(blockCache[(long) block.BlockHeight].Timestamp - blockCache[(long) block.BlockHeight - 1].Timestamp));
