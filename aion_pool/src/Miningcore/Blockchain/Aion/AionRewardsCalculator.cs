@@ -43,7 +43,7 @@ namespace Miningcore.Blockchain.Aion
         }
 
         public decimal calculateRewardWithTimeSpan(long timeSpan) {
-            if (timeSpan == 0) {
+            if (timeSpan <= 0) {
                 return 0;
             }
 
