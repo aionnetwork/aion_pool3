@@ -644,6 +644,8 @@ namespace Miningcore.Configuration
         /// </summary>
         public string Coin { get; set; }
 
+        public long? SignatureSwapProtocolUpgradeBlock { get; set; }
+
         /// <summary>
         /// Display name
         /// </summary>

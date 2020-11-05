@@ -193,6 +193,10 @@ namespace Miningcore
             {
                 if (!config.EnableInternalStratum.HasValue)
                     config.EnableInternalStratum = clusterConfig.Relays == null || clusterConfig.Relays.Length == 0;
+
+                if (!config.SignatureSwapProtocolUpgradeBlock.HasValue) {
+                    config.SignatureSwapProtocolUpgradeBlock = long.MaxValue;
+                }
             }
 
             try
