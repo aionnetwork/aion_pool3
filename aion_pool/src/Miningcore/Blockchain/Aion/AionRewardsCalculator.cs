@@ -10,7 +10,7 @@ namespace Miningcore.Blockchain.Aion
     {
         public static decimal blockReward = 4500000000000000000;
         static decimal[] rewardsAdjustTable;
-        public static int capping = 70;
+        public static int capping = 125;
         int expectedBlockTime = 10;
         public AionRewardsCalculator() {
             rewardsAdjustTable = new decimal[capping];
