@@ -1,4 +1,5 @@
 using Miningcore.Blockchain.Aion;
+using System;
 using Xunit;
 
 namespace Miningcore.Tests.Blockchain.Aion
@@ -10,15 +11,13 @@ namespace Miningcore.Tests.Blockchain.Aion
                 [Fact]
         public void TestCalculateRewardWithTimeSpanMinusOne()
         {
-            decimal rewards = ac.calculateRewardWithTimeSpan(-1);
-            Assert.Equal(0, rewards);
+            Assert.Throws<Exception>(() => ac.calculateRewardWithTimeSpan(-1));
         }
 
         [Fact]
         public void TestCalculateRewardWithTimeSpan0()
         {
-            decimal rewards = ac.calculateRewardWithTimeSpan(0);
-            Assert.Equal(0, rewards);
+            Assert.Throws<Exception>(() => ac.calculateRewardWithTimeSpan(0));
         }
 
         [Fact]

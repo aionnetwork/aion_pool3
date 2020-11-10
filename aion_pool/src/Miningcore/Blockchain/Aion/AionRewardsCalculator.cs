@@ -9,6 +9,7 @@ namespace Miningcore.Blockchain.Aion
     public class AionRewardsCalculator 
     {
         public static decimal blockReward = 4500000000000000000;
+        // The reward adjust table stored the block rewards of the block timespan, the first index, 0, is store the 1 second block timespan. and so on.
         static decimal[] rewardsAdjustTable;
         public static int capping = 125;
         int expectedBlockTime = 10;
@@ -44,7 +45,7 @@ namespace Miningcore.Blockchain.Aion
 
         public decimal calculateRewardWithTimeSpan(long timeSpan) {
             if (timeSpan <= 0) {
-                return 0;
+                throw new Exception("The block timespan should be at least 1 sec.");
             }
 
             return rewardsAdjustTable[timeSpan > capping ? capping - 1 : timeSpan - 1];
