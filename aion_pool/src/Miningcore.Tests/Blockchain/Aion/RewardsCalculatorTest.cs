@@ -24,21 +24,21 @@ namespace Miningcore.Tests.Blockchain.Aion
         public void TestCalculateRewardWithTimeSpan1()
         {
             decimal rewards = ac.calculateRewardWithTimeSpan(1);
-            Assert.Equal(2880000000000000000, rewards);
+            Assert.Equal(2880000000000000000 / ac.magnitude, rewards);
         }
 
         [Fact]
         public void TestCalculateRewardWithTimeSpan10()
         {
             decimal rewards = ac.calculateRewardWithTimeSpan(10);
-            Assert.Equal(AionRewardsCalculator.blockReward, rewards);
+            Assert.Equal(AionRewardsCalculator.blockReward / ac.magnitude, rewards);
         }
 
         [Fact]
         public void TestCalculateRewardWithTimeSpanCap()
         {
             decimal rewards = ac.calculateRewardWithTimeSpan(AionRewardsCalculator.capping);
-            decimal expect = System.Decimal.Parse("25200000000000000000");
+            decimal expect = System.Decimal.Parse("25200000000000000000") / ac.magnitude;
             Assert.Equal(expect, rewards);
         }
 
@@ -46,7 +46,7 @@ namespace Miningcore.Tests.Blockchain.Aion
         public void TestCalculateRewardWithTimeSpanCapPlus1()
         {
             decimal rewards = ac.calculateRewardWithTimeSpan(AionRewardsCalculator.capping + 1);
-            decimal expect = System.Decimal.Parse("25200000000000000000");
+            decimal expect = System.Decimal.Parse("25200000000000000000") / ac.magnitude;
             Assert.Equal(expect, rewards);
         }
     }

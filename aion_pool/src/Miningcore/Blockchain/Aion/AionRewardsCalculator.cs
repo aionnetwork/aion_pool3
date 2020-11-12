@@ -13,6 +13,8 @@ namespace Miningcore.Blockchain.Aion
         static decimal[] rewardsAdjustTable;
         public static int capping = 125;
         int expectedBlockTime = 10;
+
+        public decimal magnitude = 1000000000000000000;
         public AionRewardsCalculator() {
             rewardsAdjustTable = new decimal[capping];
             // we use rewardsSlope divided by the divisor to represent the floating point
@@ -27,7 +29,6 @@ namespace Miningcore.Blockchain.Aion
         }
 
         public decimal calculateReward(long height) {
-            var magnitude = 1000000000000000000;
             var rampUpLowerBound = 0;
             var rampUpUpperBound = 259200;
             var rampUpStartValue = 748994641621655092;
@@ -48,7 +49,7 @@ namespace Miningcore.Blockchain.Aion
                 throw new Exception("The block timespan should be at least 1 sec.");
             }
 
-            return rewardsAdjustTable[timeSpan > capping ? capping - 1 : timeSpan - 1];
+            return rewardsAdjustTable[timeSpan > capping ? capping - 1 : timeSpan - 1] / magnitude;
         }
     }
 }
