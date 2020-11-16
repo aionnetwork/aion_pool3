@@ -18,7 +18,6 @@
 - [PostgreSQL Database](https://www.postgresql.org/)
 - OAN Kernel
   - [Java Kernel](https://github.com/aionnetwork/aion/releases)
-  - [Rust Kernel](https://github.com/aionnetwork/aionr/releases)
 - (Optional) libzmq3-dev, libzmq5. If you want to setup Master-Cluster, you need to install zmq.
 
 ### Recommended Minimum Hardware Specifications
