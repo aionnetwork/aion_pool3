@@ -61,7 +61,7 @@
           "percentage": 1
         }
       ],
-      "signatureSwapProtocolUpgradeBlock": 7441441,
+      "signatureSwapProtocolUpgradeBlock": 3658558,
       "jobRebroadcastTimeout": 10,
       "clientConnectionTimeout": 600,
       "banning": {
