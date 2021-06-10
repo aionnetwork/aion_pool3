@@ -2939,7 +2939,7 @@ event-emitter@~0.3.5:
 
 event-stream@~3.3.0:
   version "3.3.4"
-  resolved "http://registry.npmjs.org/event-stream/-/event-stream-3.3.4.tgz#4ab4c9a0f5a54db9338b4c34d86bfce8f4b35571"
+  resolved "https://registry.npmjs.org/event-stream/-/event-stream-3.3.4.tgz#4ab4c9a0f5a54db9338b4c34d86bfce8f4b35571"
   dependencies:
     duplexer "~0.1.1"
     from "~0"
@@ -5259,8 +5259,9 @@ locate-path@^2.0.0:
     path-exists "^3.0.0"
 
 locutus@^2.0.5:
-  version "2.0.9"
-  resolved "https://registry.yarnpkg.com/locutus/-/locutus-2.0.9.tgz#e265af1e85fd19173e74386373888560783a02fc"
+  version "2.0.15"
+  resolved "https://registry.yarnpkg.com/locutus/-/locutus-2.0.15.tgz#d75b9100713aaaf30be8b38ed6543910498c0db0"
+  integrity sha512-2xWC4RkoAoCVXEb/stzEgG1TNgd+mrkLBj6TuEDNyUoKeQ2XzDTyJUC23sMiqbL6zJmJSP3w59OZo+zc4IBOmA==
 
 lodash-es@^4.17.4:
   version "4.17.10"
